@@ -1,0 +1,48 @@
+{
+  "name": "To-Dogether",
+  "short_name": "ToDogether",
+  "description": "Collaborative todo list app for couples",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "lifestyle"],
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create New List",
+      "short_name": "New List",
+      "description": "Create a new todo list",
+      "url": "/todo-lists/new",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "My Lists",
+      "short_name": "My Lists",
+      "description": "View your todo lists",
+      "url": "/todo-lists",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ]
+} 
