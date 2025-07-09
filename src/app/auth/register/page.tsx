@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth'
 import { Input, ColorPicker } from '@/components/ui'
 import { HeartIcon } from '@/components/ui/icons'
@@ -13,7 +14,28 @@ export default function RegisterPage() {
   const [hasInviteToken, setHasInviteToken] = useState(false)
   const [inviteToken, setInviteToken] = useState('')
   
-  const { register, isLoading, error } = useAuth()
+  const { register, isLoading, error, user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
+
+  // Auth Guard: Eğer zaten login olmuşsa dashboard'a yönlendir
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('🔄 User zaten login olmuş, dashboard\'a yönlendiriliyor...', user)
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
+
+  // Loading state
+  if (authLoading || user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

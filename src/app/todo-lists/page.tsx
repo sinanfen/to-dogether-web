@@ -4,62 +4,107 @@ import { AppLayout } from '@/components/layout'
 import { ListIcon, PlusIcon, EditIcon, TrashIcon, UsersIcon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/auth'
+import { useRouter } from 'next/navigation'
+import { api } from '@/lib/api'
+import type { TodoList } from '@/types/api'
 
 export default function TodoListsPage() {
+  const { user } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'my' | 'partner'>('my')
+  const [myLists, setMyLists] = useState<TodoList[]>([])
+  const [partnerLists, setPartnerLists] = useState<TodoList[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deletingListId, setDeletingListId] = useState<number | null>(null)
 
-  // Mock data - gerçek API call'lardan gelecek
-  const myLists = [
-    { 
-      id: 1, 
-      title: 'Weekend Plans', 
-      description: 'Things to do this weekend',
-      tasksCount: 5, 
-      completedCount: 2,
-      createdAt: '2024-01-15',
-      color: '#8B5CF6'
-    },
-    { 
-      id: 2, 
-      title: 'Grocery Shopping', 
-      description: 'Weekly grocery list',
-      tasksCount: 8, 
-      completedCount: 6,
-      createdAt: '2024-01-14',
-      color: '#EC4899'
-    },
-    { 
-      id: 3, 
-      title: 'Home Cleaning', 
-      description: 'Spring cleaning tasks',
-      tasksCount: 4, 
-      completedCount: 1,
-      createdAt: '2024-01-13',
-      color: '#10B981'
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth/login')
+      return
     }
-  ]
 
-  const partnerLists = [
-    { 
-      id: 4, 
-      title: 'Work Projects', 
-      description: 'Partner work related tasks',
-      tasksCount: 6, 
-      completedCount: 3,
-      createdAt: '2024-01-12',
-      color: '#F59E0B'
-    },
-    { 
-      id: 5, 
-      title: 'Gift Ideas', 
-      description: 'Birthday and anniversary gifts',
-      tasksCount: 3, 
-      completedCount: 1,
-      createdAt: '2024-01-10',
-      color: '#EF4444'
+    loadTodoLists()
+  }, [user, router]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadTodoLists = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      console.log('📝 Todo lists yükleniyor...')
+
+      // Load user's own lists
+      const userLists = await api.getTodoLists()
+      console.log('✅ My lists loaded:', userLists)
+      
+      // Add frontend computed fields
+      const enhancedUserLists = userLists.map(list => ({
+        ...list,
+        colorCode: '#8B5CF6', // Default purple
+        itemsCount: list.items?.length || 0,
+        completedItemsCount: list.items?.filter(item => item.status === 1).length || 0,
+        completionPercentage: list.items?.length ? 
+          Math.round((list.items.filter(item => item.status === 1).length / list.items.length) * 100) : 0,
+        priority: 'medium' as const
+      }))
+      
+      setMyLists(enhancedUserLists)
+
+      // Load partner's lists if partner exists
+      if (user?.partner) {
+        try {
+          const partnerTodoLists = await api.getPartnerTodoLists()
+          console.log('✅ Partner lists loaded:', partnerTodoLists)
+          
+          // Add frontend computed fields
+          const enhancedPartnerLists = partnerTodoLists.map(list => ({
+            ...list,
+            colorCode: '#EC4899', // Default pink for partner
+            itemsCount: list.items?.length || 0,
+            completedItemsCount: list.items?.filter(item => item.status === 1).length || 0,
+            completionPercentage: list.items?.length ? 
+              Math.round((list.items.filter(item => item.status === 1).length / list.items.length) * 100) : 0,
+            priority: 'medium' as const
+          }))
+          
+          setPartnerLists(enhancedPartnerLists)
+        } catch (partnerError) {
+          console.error('❌ Failed to load partner lists:', partnerError)
+          // Don't throw error for partner lists, just log it
+          setPartnerLists([])
+        }
+      } else {
+        console.log('👤 No partner, skipping partner lists')
+        setPartnerLists([])
+      }
+    } catch (err) {
+      console.error('❌ Todo lists loading error:', err)
+      setError('Failed to load todo lists')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  const handleDeleteList = async (listId: number) => {
+    if (!confirm('Are you sure you want to delete this list? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      setDeletingListId(listId)
+      await api.deleteTodoList(listId)
+      
+      // Refresh the lists
+      await loadTodoLists()
+    } catch (err) {
+      setError('Failed to delete todo list')
+      console.error('Delete list error:', err)
+    } finally {
+      setDeletingListId(null)
+    }
+  }
 
   const currentLists = activeTab === 'my' ? myLists : partnerLists
 
@@ -67,6 +112,17 @@ export default function TodoListsPage() {
     if (percentage >= 80) return 'from-green-500 to-emerald-500'
     if (percentage >= 50) return 'from-yellow-500 to-orange-500'
     return 'from-red-500 to-pink-500'
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -91,6 +147,24 @@ export default function TodoListsPage() {
           </div>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-red-600 font-medium">{error}</p>
+            <Button 
+              onClick={() => {
+                setError(null)
+                loadTodoLists()
+              }}
+              variant="outline" 
+              size="sm"
+              className="mt-2"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
@@ -112,81 +186,133 @@ export default function TodoListsPage() {
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              disabled={!user.partner}
             >
               <UsersIcon className="h-4 w-4" />
-              <span>Partner Lists ({partnerLists.length})</span>
+              <span>
+                {user.partner ? `Partner Lists (${partnerLists.length})` : 'No Partner'}
+              </span>
             </button>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-200 rounded-xl p-6 h-48"></div>
+              ))}
+            </div>
+          )}
+
           {/* Lists Grid */}
-          {currentLists.length > 0 ? (
+          {!loading && currentLists.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentLists.map((list) => {
-                const progressPercentage = Math.round((list.completedCount / list.tasksCount) * 100)
+                const isDeleting = deletingListId === list.id
                 
                 return (
                   <div
                     key={list.id}
-                    className="group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                    className={`group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                      isDeleting ? 'opacity-50' : ''
+                    }`}
                   >
                     {/* List Header */}
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 flex-1">
                         <div 
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: list.color }}
+                          className="w-4 h-4 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: list.colorCode }}
                         />
-                        <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-2">
                           {list.title}
                         </h3>
                       </div>
                       
                       {activeTab === 'my' && (
                         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
-                          </button>
-                          <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                            <TrashIcon className="h-4 w-4 text-gray-600 hover:text-red-600" />
+                          <Link href={`/todo-lists/${list.id}/edit`}>
+                            <button 
+                              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                              disabled={isDeleting}
+                            >
+                              <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
+                            </button>
+                          </Link>
+                          <button 
+                            onClick={() => handleDeleteList(list.id)}
+                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                            ) : (
+                              <TrashIcon className="h-4 w-4 text-gray-600 hover:text-red-600" />
+                            )}
                           </button>
                         </div>
                       )}
                     </div>
 
                     {/* Description */}
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {list.description}
-                    </p>
+                    {list.description && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {list.description}
+                      </p>
+                    )}
 
                     {/* Progress */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-600">
-                          {list.completedCount} of {list.tasksCount} completed
+                          {list.completedItemsCount || 0} of {list.itemsCount || 0} completed
                         </span>
                         <span className="text-xs font-medium text-gray-900">
-                          {progressPercentage}%
+                          {list.completionPercentage || 0}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className={`bg-gradient-to-r ${getProgressColor(progressPercentage)} h-2 rounded-full transition-all duration-300`}
-                          style={{ width: `${progressPercentage}%` }}
+                          className={`bg-gradient-to-r ${getProgressColor(list.completionPercentage || 0)} h-2 rounded-full transition-all duration-300`}
+                          style={{ width: `${list.completionPercentage || 0}%` }}
                         />
+                      </div>
+                    </div>
+
+                    {/* Meta Info */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full capitalize">
+                          {list.priority}
+                        </span>
+                        {list.isShared && (
+                          <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
+                            Shared
+                          </span>
+                        )}
+                        {list.category && (
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full capitalize">
+                            {list.category}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Footer */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        Created {new Date(list.createdAt).toLocaleDateString()}
-                      </span>
+                      <div className="text-xs text-gray-500">
+                        <p>Created {new Date(list.createdAt).toLocaleDateString()}</p>
+                        {list.lastActivity && (
+                          <p>Last activity {new Date(list.lastActivity).toLocaleDateString()}</p>
+                        )}
+                      </div>
                       
                       <Link href={`/todo-lists/${list.id}`}>
                         <Button 
                           variant="outline" 
                           size="sm"
                           className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={isDeleting}
                         >
                           View Details
                         </Button>
@@ -196,32 +322,57 @@ export default function TodoListsPage() {
                 )
               })}
             </div>
-          ) : (
-            /* Empty State */
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                {activeTab === 'my' ? (
-                  <ListIcon className="h-8 w-8 text-gray-400" />
-                ) : (
-                  <UsersIcon className="h-8 w-8 text-gray-400" />
-                )}
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {activeTab === 'my' ? 'No lists yet' : 'No partner lists'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {activeTab === 'my' 
-                  ? 'Create your first todo list to start organizing your tasks'
-                  : 'Your partner hasn&apos;t created any lists yet'
-                }
-              </p>
-              {activeTab === 'my' && (
-                <Link href="/todo-lists/new">
-                  <Button variant="gradient">
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Create Your First List
-                  </Button>
-                </Link>
+          )}
+
+          {/* Empty State */}
+          {!loading && currentLists.length === 0 && (
+            <div className="text-center py-16">
+              {activeTab === 'my' ? (
+                <>
+                  <ListIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    No Todo Lists Yet
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Create your first todo list to start organizing your tasks and planning with your partner.
+                  </p>
+                  <Link href="/todo-lists/new">
+                    <Button variant="gradient" size="lg">
+                      <PlusIcon className="h-5 w-5 mr-2" />
+                      Create Your First List
+                    </Button>
+                  </Link>
+                </>
+              ) : user.partner ? (
+                <>
+                  <UsersIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    No Partner Lists Yet
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Your partner hasn&apos;t created any todo lists yet, or they haven&apos;t shared any lists with you.
+                  </p>
+                  <Link href="/partner">
+                    <Button variant="outline">
+                      View Partner Overview
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <UsersIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    Connect with Your Partner
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Connect with your partner to see their todo lists and collaborate on shared tasks.
+                  </p>
+                  <Link href="/profile">
+                    <Button variant="gradient">
+                      Connect Partner
+                    </Button>
+                  </Link>
+                </>
               )}
             </div>
           )}
@@ -241,8 +392,8 @@ export default function TodoListsPage() {
           <div className="bg-white rounded-xl p-6 shadow-lg">
             <div className="text-center">
               <p className="text-3xl font-bold text-green-600">
-                {myLists.reduce((acc, list) => acc + list.completedCount, 0) + 
-                 partnerLists.reduce((acc, list) => acc + list.completedCount, 0)}
+                {myLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0) + 
+                 partnerLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0)}
               </p>
               <p className="text-gray-600 font-medium">Completed Tasks</p>
             </div>
@@ -251,8 +402,8 @@ export default function TodoListsPage() {
           <div className="bg-white rounded-xl p-6 shadow-lg">
             <div className="text-center">
               <p className="text-3xl font-bold text-orange-600">
-                {myLists.reduce((acc, list) => acc + (list.tasksCount - list.completedCount), 0) + 
-                 partnerLists.reduce((acc, list) => acc + (list.tasksCount - list.completedCount), 0)}
+                {myLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0) + 
+                 partnerLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0)}
               </p>
               <p className="text-gray-600 font-medium">Pending Tasks</p>
             </div>

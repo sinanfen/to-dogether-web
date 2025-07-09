@@ -1,1 +1,360 @@
 @import "tailwindcss";
+
+/* PWA and Mobile Optimizations */
+@layer base {
+  html {
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+    /* Prevent zoom on form inputs (iOS) */
+    -webkit-text-size-adjust: 100%;
+    /* Better font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+    /* Optimize for mobile interactions */
+    -webkit-tap-highlight-color: transparent;
+    /* Ensure full height on mobile */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* PWA Safe Area Support */
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Mobile optimizations */
+  * {
+    /* Better touch interactions */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Form elements mobile optimization */
+  input, textarea, select {
+    /* Prevent zoom on iOS when focused */
+    font-size: 16px;
+  }
+
+  /* Button optimizations for touch */
+  button, [role="button"], .touch-target {
+    /* Minimum touch target size (44px recommended) */
+    min-width: 44px;
+    min-height: 44px;
+    /* Better touch feedback */
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth transitions */
+    transition: all 0.2s ease;
+  }
+
+  /* Scroll optimizations */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent text selection on UI elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+}
+
+@layer components {
+  /* Touch-friendly button classes */
+  .btn-touch {
+    @apply min-w-[44px] min-h-[44px] touch-manipulation;
+  }
+
+  .btn-touch-lg {
+    @apply min-w-[48px] min-h-[48px] touch-manipulation;
+  }
+
+  /* Mobile-first card styles */
+  .card-mobile {
+    @apply rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply active:scale-[0.98] lg:hover:scale-[1.02];
+  }
+
+  /* Mobile navigation styles */
+  .nav-mobile {
+    @apply p-4 rounded-xl transition-all duration-200 touch-manipulation;
+    @apply active:scale-[0.95] hover:scale-[1.02];
+    min-height: 56px;
+  }
+
+  /* Mobile form styles */
+  .input-mobile {
+    @apply text-base rounded-xl border-2 transition-all duration-200;
+    @apply focus:border-purple-500 focus:ring-4 focus:ring-purple-100;
+    min-height: 48px;
+  }
+
+  /* Loading animations optimized for mobile */
+  .loading-mobile {
+    @apply animate-pulse;
+  }
+
+  /* Gradient text optimized for mobile displays */
+  .text-gradient {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
+  }
+
+  /* Mobile-optimized modal/overlay */
+  .modal-mobile {
+    @apply fixed inset-0 z-50 flex items-end lg:items-center justify-center;
+    @apply bg-black/50 backdrop-blur-sm;
+  }
+
+  .modal-content-mobile {
+    @apply bg-white rounded-t-3xl lg:rounded-2xl w-full lg:w-auto lg:max-w-md;
+    @apply transform transition-all duration-300 ease-out;
+    @apply translate-y-0 lg:translate-y-0;
+    max-height: 90vh;
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Progress bar styles */
+  .progress-mobile {
+    @apply w-full bg-gray-200 rounded-full h-3 overflow-hidden;
+  }
+
+  .progress-bar-mobile {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+  }
+
+  /* Mobile typography enhancements */
+  .text-mobile-lg {
+    @apply text-xl lg:text-2xl font-bold leading-tight;
+  }
+
+  .text-mobile-md {
+    @apply text-lg lg:text-xl font-semibold;
+  }
+
+  .text-mobile-sm {
+    @apply text-sm lg:text-base;
+  }
+
+  /* List styles for mobile */
+  .list-mobile {
+    @apply space-y-3;
+  }
+
+  .list-item-mobile {
+    @apply p-4 rounded-xl bg-white shadow-md hover:shadow-lg;
+    @apply transition-all duration-200 touch-manipulation;
+    @apply active:scale-[0.98] hover:scale-[1.01];
+  }
+
+  /* Status indicators */
+  .status-online {
+    @apply w-3 h-3 bg-green-500 rounded-full animate-pulse;
+  }
+
+  .status-offline {
+    @apply w-3 h-3 bg-gray-400 rounded-full;
+  }
+
+  /* Badge styles */
+  .badge-mobile {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+    @apply bg-purple-100 text-purple-800;
+  }
+
+  /* Avatar styles */
+  .avatar-mobile {
+    @apply rounded-full shadow-md border-2 border-white;
+  }
+
+  /* Floating action button (FAB) for mobile */
+  .fab-mobile {
+    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-xl;
+    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white;
+    @apply flex items-center justify-center transition-all duration-200;
+    @apply hover:scale-110 active:scale-95 touch-manipulation;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+@layer utilities {
+  /* Touch manipulation utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+
+  .touch-none {
+    touch-action: none;
+  }
+
+  /* Mobile viewport utilities */
+  .h-screen-mobile {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+
+  .min-h-screen-mobile {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* Mobile-specific display utilities */
+  .mobile-only {
+    @apply block lg:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden lg:block;
+  }
+
+  /* Line clamp utilities for better mobile text handling */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Scroll utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Focus utilities for better accessibility */
+  .focus-ring-mobile {
+    @apply focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-500;
+  }
+
+  /* Animation utilities optimized for mobile */
+  .animate-bounce-mobile {
+    animation: bounce-mobile 1s infinite;
+  }
+
+  .animate-fade-in-mobile {
+    animation: fade-in-mobile 0.3s ease-out;
+  }
+
+  .animate-slide-up-mobile {
+    animation: slide-up-mobile 0.3s ease-out;
+  }
+}
+
+/* Mobile-optimized animations */
+@keyframes bounce-mobile {
+  0%, 100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes fade-in-mobile {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up-mobile {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* PWA Splash Screen Support */
+@media (display-mode: standalone) {
+  body {
+    /* Hide any browser UI when in PWA mode */
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Dark mode support for better mobile experience */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode variables can be added here */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .text-gradient {
+    @apply text-purple-700;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-landscape-compact {
+    @apply py-2;
+  }
+}
