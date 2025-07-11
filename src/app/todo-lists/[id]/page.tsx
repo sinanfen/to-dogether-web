@@ -8,16 +8,34 @@ import {
   CheckIcon, 
   EditIcon, 
   TrashIcon, 
-  UserIcon, 
   ListIcon,
-  ShareIcon,
-  TargetIcon
+  TargetIcon,
+  XMarkIcon
 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth'
 import { api } from '@/lib/api'
 import type { TodoList, TodoItem, CreateTodoItemRequest, UpdateTodoItemRequest } from '@/types/api'
+
+// Utility functions for priority/severity mapping
+const priorityToSeverity = (priority: string): number => {
+  switch (priority) {
+    case 'high': return 2
+    case 'medium': return 1
+    case 'low': return 0
+    default: return 1
+  }
+}
+
+const severityToPriority = (severity: number): string => {
+  switch (severity) {
+    case 2: return 'high'
+    case 1: return 'medium'
+    case 0: return 'low'
+    default: return 'medium'
+  }
+}
 
 export default function TodoListDetailPage() {
   const params = useParams()
@@ -29,25 +47,37 @@ export default function TodoListDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [addingItem, setAddingItem] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [editingItemId, setEditingItemId] = useState<number | null>(null)
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null)
+  const [toggleingItemId, setToggleingItemId] = useState<number | null>(null)
   
   // Form states
   const [newItemForm, setNewItemForm] = useState({
     title: '',
     description: '',
-    priority: 'medium' as 'low' | 'medium' | 'high',
-    assignedTo: null as number | null,
-    dueDate: ''
+    priority: 'medium' as 'low' | 'medium' | 'high'
   })
   
   const [editItemForm, setEditItemForm] = useState({
     title: '',
     description: '',
-    priority: 'medium' as 'low' | 'medium' | 'high',
-    assignedTo: null as number | null,
-    dueDate: ''
+    priority: 'medium' as 'low' | 'medium' | 'high'
   })
+
+  // Permission check function
+  const canEditItems = () => {
+    if (!todoList || !user) return false
+    // User can edit if they are the owner OR if the list is shared
+    return todoList.ownerId === user.id || todoList.isShared
+  }
+
+  // Check if this is a partner's list that is not shared (read-only)
+  const isReadOnlyPartnerList = () => {
+    if (!todoList || !user) return false
+    // If it's not owned by current user and not shared, it's read-only
+    return todoList.ownerId !== user.id && !todoList.isShared
+  }
 
   useEffect(() => {
     if (!user) {
@@ -61,41 +91,45 @@ export default function TodoListDetailPage() {
     }
 
     loadTodoList()
-  }, [user, router, listId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, router, listId])
 
   const loadTodoList = async () => {
     try {
       setLoading(true)
       setError(null)
-      console.log(`📝 Todo list ${listId} yükleniyor...`)
+      // Önce list bilgisini al
+      const list = await api.findTodoList(listId)
       
-      // Get list details and items separately
-      const [list, items] = await Promise.all([
-        api.getTodoList(listId),
-        api.getTodoItems(listId)
-      ])
+      if (!list) {
+        setError('Todo list not found')
+        return
+      }
       
-      console.log('✅ Todo list loaded:', list)
-      console.log('✅ Todo items loaded:', items)
+      // Sonra items'ları al
+      let items: TodoItem[] = []
+      try {
+        items = await api.getTodoItems(listId)
+      } catch {
+        items = []
+      }
       
-      // Map backend items to frontend format
       const enhancedItems = items.map(item => ({
         ...item,
-        // Map backend fields to frontend
         isCompleted: item.status === 1,
-        priority: (item.severity === 2 ? 'high' : item.severity === 1 ? 'medium' : 'low') as 'low' | 'medium' | 'high',
+        priority: severityToPriority(item.severity) as 'low' | 'medium' | 'high',
         todoListId: listId
       }))
       
-      // Enhance list with items and computed fields
+      const completedCount = enhancedItems.filter(item => item.isCompleted).length
+      const totalCount = enhancedItems.length
+      
       const enhancedList = {
         ...list,
         items: enhancedItems,
-        colorCode: '#8B5CF6', // Default color
-        itemsCount: enhancedItems.length,
-        completedItemsCount: enhancedItems.filter(item => item.isCompleted).length,
-        completionPercentage: enhancedItems.length ? 
-          Math.round((enhancedItems.filter(item => item.isCompleted).length / enhancedItems.length) * 100) : 0,
+        colorCode: list.colorCode || '#8B5CF6',
+        itemsCount: totalCount,
+        completedItemsCount: completedCount,
+        completionPercentage: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
         priority: 'medium' as const
       }
       
@@ -114,26 +148,23 @@ export default function TodoListDetailPage() {
     try {
       setAddingItem(true)
       
+
+      
       const itemData: CreateTodoItemRequest = {
         title: newItemForm.title.trim(),
         description: newItemForm.description.trim() || undefined,
-        priority: newItemForm.priority,
-        assignedTo: newItemForm.assignedTo || undefined,
-        dueDate: newItemForm.dueDate || undefined
+        severity: priorityToSeverity(newItemForm.priority)
       }
 
       await api.createTodoItem(listId, itemData)
       
-      // Reset form
       setNewItemForm({
         title: '',
         description: '',
-        priority: 'medium',
-        assignedTo: null,
-        dueDate: ''
+        priority: 'medium'
       })
       
-      // Reload list
+      setShowAddForm(false)
       await loadTodoList()
     } catch (err) {
       setError('Failed to add item')
@@ -151,15 +182,11 @@ export default function TodoListDetailPage() {
         id: itemId,
         title: editItemForm.title.trim(),
         description: editItemForm.description.trim() || undefined,
-        priority: editItemForm.priority,
-        assignedTo: editItemForm.assignedTo || undefined,
-        dueDate: editItemForm.dueDate || undefined
+        severity: priorityToSeverity(editItemForm.priority)
       }
 
       await api.updateTodoItem(listId, itemData)
       setEditingItemId(null)
-      
-      // Reload list
       await loadTodoList()
     } catch (err) {
       setError('Failed to update item')
@@ -175,8 +202,6 @@ export default function TodoListDetailPage() {
     try {
       setDeletingItemId(itemId)
       await api.deleteTodoItem(listId, itemId)
-      
-      // Reload list
       await loadTodoList()
     } catch (err) {
       setError('Failed to delete item')
@@ -188,25 +213,24 @@ export default function TodoListDetailPage() {
 
   const handleToggleComplete = async (itemId: number) => {
     try {
+      setToggleingItemId(itemId)
       await api.toggleTodoItem(listId, itemId)
-      
-      // Reload list
       await loadTodoList()
     } catch (err) {
       setError('Failed to toggle item')
       console.error('Toggle item error:', err)
+    } finally {
+      setToggleingItemId(null)
     }
   }
 
-  const startEditItem = (item: TodoItem) => {
-    setEditingItemId(item.id)
+  const startEdit = (item: TodoItem) => {
     setEditItemForm({
       title: item.title,
       description: item.description || '',
-      priority: item.priority || 'medium',
-      assignedTo: item.assignedTo || null,
-      dueDate: item.dueDate || ''
+      priority: item.priority || 'medium'
     })
+    setEditingItemId(item.id)
   }
 
   const cancelEdit = () => {
@@ -214,27 +238,43 @@ export default function TodoListDetailPage() {
     setEditItemForm({
       title: '',
       description: '',
-      priority: 'medium',
-      assignedTo: null,
-      dueDate: ''
+      priority: 'medium'
     })
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      case 'low': return 'bg-green-100 text-green-700 border-green-200'
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+      case 'high': return 'from-red-500 to-pink-500'
+      case 'medium': return 'from-yellow-500 to-orange-500'
+      case 'low': return 'from-green-500 to-emerald-500'
+      default: return 'from-gray-500 to-slate-500'
+    }
+  }
+
+  const getPriorityBg = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'from-red-50 to-pink-50 border-red-200/50'
+      case 'medium': return 'from-yellow-50 to-orange-50 border-yellow-200/50'
+      case 'low': return 'from-green-50 to-emerald-50 border-green-200/50'
+      default: return 'from-gray-50 to-slate-50 border-gray-200/50'
     }
   }
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
-      case 'high': return '🔴'
-      case 'medium': return '🟡'
-      case 'low': return '🟢'
-      default: return '⚪'
+      case 'high': return <TargetIcon className="w-4 h-4" />
+      case 'medium': return <ListIcon className="w-4 h-4" />
+      case 'low': return <CheckIcon className="w-4 h-4" />
+      default: return <ListIcon className="w-4 h-4" />
+    }
+  }
+
+  const getPriorityShadowColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'hover:shadow-red-200/40'
+      case 'medium': return 'hover:shadow-yellow-200/40'
+      case 'low': return 'hover:shadow-green-200/40'
+      default: return 'hover:shadow-gray-200/40'
     }
   }
 
@@ -252,19 +292,24 @@ export default function TodoListDetailPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="space-y-6 animate-pulse">
+        <div className="space-y-8 animate-pulse">
           {/* Header Skeleton */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
             <div className="h-8 w-64 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 w-96 bg-gray-200 rounded"></div>
+            <div className="h-4 w-96 bg-gray-200 rounded mb-6"></div>
+            <div className="flex space-x-4">
+              <div className="h-6 w-20 bg-gray-200 rounded"></div>
+              <div className="h-6 w-24 bg-gray-200 rounded"></div>
+              <div className="h-6 w-16 bg-gray-200 rounded"></div>
+            </div>
           </div>
           
           {/* Items Skeleton */}
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl p-4 shadow-md">
-                <div className="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 w-3/4 bg-gray-200 rounded"></div>
+            {[1,2,3].map(i => (
+              <div key={i} className="bg-white rounded-xl p-6 shadow-md">
+                <div className="h-5 w-3/4 bg-gray-200 rounded mb-3"></div>
+                <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
               </div>
             ))}
           </div>
@@ -273,24 +318,22 @@ export default function TodoListDetailPage() {
     )
   }
 
-  if (error && !todoList) {
+  if (error) {
     return (
       <AppLayout>
         <div className="text-center py-12">
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md mx-auto">
-            <p className="text-red-600 font-medium">{error}</p>
-            <div className="mt-4 space-x-3">
+            <p className="text-red-600 font-medium mb-4">{error}</p>
+            <div className="space-x-3">
               <Button 
-                onClick={() => {
-                  setError(null)
-                  loadTodoList()
-                }}
+                onClick={() => loadTodoList()} 
                 variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-500 hover:text-white"
               >
                 Retry
               </Button>
               <Link href="/todo-lists">
-                <Button variant="gradient">
+                <Button variant="outline">
                   Back to Lists
                 </Button>
               </Link>
@@ -305,9 +348,13 @@ export default function TodoListDetailPage() {
     return (
       <AppLayout>
         <div className="text-center py-12">
-          <ListIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">List Not Found</h2>
-          <p className="text-gray-600 mb-6">The todo list you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
+          <ListIcon className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            Todo List Not Found
+          </h3>
+          <p className="text-gray-600 mb-8">
+            The todo list you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
+          </p>
           <Link href="/todo-lists">
             <Button variant="gradient">
               Back to Lists
@@ -318,376 +365,438 @@ export default function TodoListDetailPage() {
     )
   }
 
-  const items = todoList.items || []
-  const completedItems = items.filter(item => item.isCompleted)
-  const pendingItems = items.filter(item => !item.isCompleted)
-
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-            <div className="mb-4 sm:mb-0">
-              <div className="flex items-center space-x-2 mb-2">
-                <Link href="/todo-lists">
-                  <Button variant="outline" size="sm" className="bg-white/20 border-white/30 text-white hover:bg-white/30">
-                    ← Back
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="relative overflow-hidden">
+          {/* Background Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-3xl opacity-90"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent rounded-3xl"></div>
+          
+          {/* Content */}
+          <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 text-white shadow-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8">
+              <div className="flex-1 mb-6 lg:mb-0">
+                {/* Breadcrumb */}
+                <div className="flex items-center space-x-2 text-purple-100 text-sm mb-4">
+                  <Link href="/todo-lists" className="hover:text-white transition-colors">
+                    Todo Lists
+                  </Link>
+                  <span>/</span>
+                  <span className="text-white font-medium">Detail</span>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                  {todoList.title}
+                </h1>
+
+                {/* Description */}
+                {todoList.description && (
+                  <p className="text-lg text-purple-100 mb-6 max-w-2xl leading-relaxed">
+                    {todoList.description}
+                  </p>
+                )}
+
+                {/* Stats */}
+                <div className="flex flex-wrap items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                      <ListIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-purple-100">Total Tasks</p>
+                      <p className="text-xl font-bold">{todoList.itemsCount || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                      <CheckIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-purple-100">Completed</p>
+                      <p className="text-xl font-bold">{todoList.completedItemsCount || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                      <TargetIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-purple-100">Progress</p>
+                      <p className="text-xl font-bold">{todoList.completionPercentage || 0}%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center space-x-3 lg:ml-8">
+                {canEditItems() && (
+                  <Button 
+                    onClick={() => setShowAddForm(true)}
+                    className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    Add Task
                   </Button>
-                </Link>
+                )}
+                
+                {canEditItems() && (
+                  <Link href={`/todo-lists/${listId}/edit`}>
+                    <Button 
+                      variant="outline"
+                      className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      <EditIcon className="w-4 h-4 mr-2" />
+                      Edit List
+                    </Button>
+                  </Link>
+                )}
+
+                {isReadOnlyPartnerList() && (
+                  <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 backdrop-blur-sm border border-yellow-300/30 rounded-lg">
+                    <div className="w-2 h-2 bg-yellow-300 rounded-full" />
+                    <span className="text-sm text-yellow-100 font-medium">
+                      Read-only - Partner&apos;s private list
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center space-x-3 mb-2">
+            </div>
+
+            {/* Progress Bar */}
+            <div className="relative">
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
                 <div 
-                  className="w-6 h-6 rounded-full flex-shrink-0 border-2 border-white/30"
-                  style={{ backgroundColor: todoList.colorCode }}
-                />
-                <h1 className="text-2xl font-bold">{todoList.title}</h1>
-              </div>
-              {todoList.description && (
-                <p className="text-purple-100">{todoList.description}</p>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <p className="text-sm text-purple-100">Progress</p>
-                <p className="text-xl font-bold">{todoList.completionPercentage}%</p>
-              </div>
-              <div className="w-16 bg-white/20 rounded-full h-3">
-                <div 
-                  className="bg-white h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${todoList.completionPercentage}%` }}
+                  className="h-full bg-gradient-to-r from-white/80 to-white/60 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${todoList.completionPercentage || 0}%` }}
                 />
               </div>
-            </div>
-          </div>
-          
-          {/* List Meta */}
-          <div className="flex items-center space-x-4 mt-4 pt-4 border-t border-white/20">
-            <div className="flex items-center space-x-2">
-              <TargetIcon className="h-4 w-4" />
-              <span className="text-sm capitalize">{todoList.priority} Priority</span>
-            </div>
-            {todoList.isShared && (
-              <div className="flex items-center space-x-2">
-                <ShareIcon className="h-4 w-4" />
-                <span className="text-sm">Shared List</span>
-              </div>
-            )}
-            {todoList.category && (
-              <div className="flex items-center space-x-2">
-                <ListIcon className="h-4 w-4" />
-                <span className="text-sm capitalize">{todoList.category}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-red-600 font-medium">{error}</p>
-            <Button 
-              onClick={() => setError(null)}
-              variant="outline" 
-              size="sm"
-              className="mt-2"
-            >
-              Dismiss
-            </Button>
-          </div>
-        )}
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-md">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{items.length}</p>
-              <p className="text-sm text-gray-600">Total Items</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{completedItems.length}</p>
-              <p className="text-sm text-gray-600">Completed</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">{pendingItems.length}</p>
-              <p className="text-sm text-gray-600">Pending</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-md">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{todoList.completionPercentage}%</p>
-              <p className="text-sm text-gray-600">Progress</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-full"></div>
             </div>
           </div>
         </div>
 
-        {/* Add New Item */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Item</h2>
-          
-          <div className="space-y-4">
-            <Input
-              value={newItemForm.title}
-              onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
-              placeholder="Enter item title..."
-              className="w-full"
-              disabled={addingItem}
-            />
-            
-            <Input
-              value={newItemForm.description}
-              onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
-              placeholder="Description (optional)..."
-              className="w-full"
-              disabled={addingItem}
-            />
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                <select
-                  value={newItemForm.priority}
-                  onChange={(e) => setNewItemForm({ ...newItemForm, priority: e.target.value as 'low' | 'medium' | 'high' })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  disabled={addingItem}
+        {/* Add New Item Form */}
+        {showAddForm && (
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl opacity-50"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Add New Task</h3>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                </select>
+                  <XMarkIcon className="w-5 h-5 text-gray-500" />
+                </button>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
-                <select
-                  value={newItemForm.assignedTo || ''}
-                  onChange={(e) => setNewItemForm({ ...newItemForm, assignedTo: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  disabled={addingItem}
-                >
-                  <option value="">Unassigned</option>
-                  <option value={user.id}>Me ({user.username})</option>
-                  {user.partner && (
-                    <option value={user.partner.id}>{user.partner.username}</option>
-                  )}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                <input
-                  type="date"
-                  value={newItemForm.dueDate}
-                  onChange={(e) => setNewItemForm({ ...newItemForm, dueDate: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  disabled={addingItem}
-                />
-              </div>
-            </div>
-            
-            <Button
-              onClick={handleAddItem}
-              disabled={!newItemForm.title.trim() || addingItem}
-              className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-            >
-              {addingItem ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Add Item
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
 
-        {/* Todo Items */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            Todo Items ({items.length})
-          </h2>
-          
-          {items.length === 0 ? (
-            <div className="text-center py-12">
-              <ListIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Items Yet</h3>
-              <p className="text-gray-600">Add your first item to get started with this todo list.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Pending Items */}
-              {pendingItems.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">
-                    Pending ({pendingItems.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {pendingItems.map((item) => (
-                      <div 
-                        key={item.id} 
-                        className={`border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
-                          deletingItemId === item.id ? 'opacity-50' : ''
-                        }`}
-                      >
-                        {editingItemId === item.id ? (
-                          /* Edit Mode */
-                          <div className="space-y-4">
-                            <Input
-                              value={editItemForm.title}
-                              onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
-                              placeholder="Item title..."
-                              className="w-full"
-                            />
-                            <Input
-                              value={editItemForm.description}
-                              onChange={(e) => setEditItemForm({ ...editItemForm, description: e.target.value })}
-                              placeholder="Description..."
-                              className="w-full"
-                            />
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                onClick={() => handleEditItem(item.id)}
-                                size="sm"
-                                disabled={!editItemForm.title.trim()}
-                              >
-                                <CheckIcon className="h-4 w-4 mr-1" />
-                                Save
-                              </Button>
-                              <Button
-                                onClick={cancelEdit}
-                                variant="outline"
-                                size="sm"
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          /* View Mode */
-                          <div className="flex items-start space-x-3">
-                            <button
-                              onClick={() => handleToggleComplete(item.id)}
-                              className="w-5 h-5 rounded border-2 border-gray-300 hover:border-purple-500 flex items-center justify-center transition-colors mt-0.5 flex-shrink-0"
-                              disabled={deletingItemId === item.id}
-                            >
-                              {item.isCompleted && (
-                                <CheckIcon className="h-3 w-3 text-purple-600" />
-                              )}
-                            </button>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h4 className={`font-medium ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                                    {item.title}
-                                  </h4>
-                                  {item.description && (
-                                    <p className={`text-sm mt-1 ${item.isCompleted ? 'line-through text-gray-400' : 'text-gray-600'}`}>
-                                      {item.description}
-                                    </p>
-                                  )}
-                                  
-                                  <div className="flex items-center space-x-3 mt-2">
-                                    <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(item.priority || 'medium')}`}>
-                                      {getPriorityIcon(item.priority || 'medium')} {item.priority || 'medium'}
-                                    </span>
-                                    
-                                    {item.assignedUser && (
-                                      <div className="flex items-center space-x-1 text-xs text-gray-600">
-                                        <UserIcon className="h-3 w-3" />
-                                        <span>{item.assignedUser.username}</span>
-                                      </div>
-                                    )}
-                                    
-                                    {item.dueDate && (
-                                      <div className="text-xs text-gray-600">
-                                        Due: {new Date(item.dueDate).toLocaleDateString()}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-1 ml-2">
-                                  <button
-                                    onClick={() => startEditItem(item)}
-                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                                    disabled={deletingItemId === item.id}
-                                  >
-                                    <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                                    disabled={deletingItemId === item.id}
-                                  >
-                                    {deletingItemId === item.id ? (
-                                      <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                                    ) : (
-                                      <TrashIcon className="h-4 w-4 text-gray-600 hover:text-red-600" />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+              {isReadOnlyPartnerList() && (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                    <span className="text-sm text-yellow-700 font-medium">
+                      You can only view this list. Only the owner can add tasks.
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Completed Items */}
-              {completedItems.length > 0 && (
-                <div className={pendingItems.length > 0 ? 'pt-6 border-t border-gray-200' : ''}>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">
-                    Completed ({completedItems.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {completedItems.map((item) => (
-                      <div 
-                        key={item.id} 
-                        className="border border-gray-200 rounded-xl p-4 bg-gray-50 opacity-75"
-                      >
-                        <div className="flex items-start space-x-3">
-                          <button
-                            onClick={() => handleToggleComplete(item.id)}
-                            className="w-5 h-5 rounded border-2 border-green-500 bg-green-500 flex items-center justify-center transition-colors mt-0.5 flex-shrink-0"
-                          >
-                            <CheckIcon className="h-3 w-3 text-white" />
-                          </button>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium line-through text-gray-500">
-                              {item.title}
-                            </h4>
-                            {item.description && (
-                              <p className="text-sm mt-1 line-through text-gray-400">
-                                {item.description}
-                              </p>
-                            )}
-                            {item.completedAt && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                Completed {new Date(item.completedAt).toLocaleDateString()}
-                                {item.completedUser && ` by ${item.completedUser.username}`}
-                              </p>
+                              <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Task Title
+                    </label>
+                    <Input
+                      value={newItemForm.title}
+                      onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
+                      placeholder="Enter task title..."
+                      className="w-full"
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+                      disabled={isReadOnlyPartnerList()}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      value={newItemForm.description}
+                      onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
+                      placeholder="Add task description..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isReadOnlyPartnerList()}
+                    />
+                  </div>
+
+                                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Priority
+                    </label>
+                    <div className="flex space-x-3">
+                      {(['low', 'medium', 'high'] as const).map((priority) => (
+                        <button
+                          key={priority}
+                          onClick={() => setNewItemForm({ ...newItemForm, priority })}
+                          disabled={isReadOnlyPartnerList()}
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 ${
+                            newItemForm.priority === priority
+                              ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white border-transparent shadow-lg`
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                          } ${isReadOnlyPartnerList() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {getPriorityIcon(priority)}
+                          <span className="capitalize font-medium">{priority}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <Button
+                    onClick={() => setShowAddForm(false)}
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddItem}
+                    disabled={!newItemForm.title.trim() || addingItem || isReadOnlyPartnerList()}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  >
+                    {addingItem ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    ) : (
+                      <PlusIcon className="w-4 h-4 mr-2" />
+                    )}
+                    Add Task
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Todo Items */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Tasks ({todoList.items?.length || 0})
+            </h2>
+            
+            {!showAddForm && canEditItems() && (
+              <Button
+                onClick={() => setShowAddForm(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Add Task
+              </Button>
+            )}
+            
+            {isReadOnlyPartnerList() && (
+              <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                <span className="text-sm text-yellow-700 font-medium">
+                  Read-only mode - This is your partner&apos;s private list
+                </span>
+              </div>
+            )}
+          </div>
+
+          {todoList.items && todoList.items.length > 0 ? (
+            <div className="space-y-4">
+              {todoList.items.map((item) => (
+                <div key={item.id} className="group relative">
+                  {/* Background gradient based on priority */}
+                  <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-2xl opacity-50`}></div>
+                  
+                  {/* Content */}
+                  <div className={`relative bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:border-gray-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-75 shadow-gray-300/50' : ''}`}>
+                    {editingItemId === item.id ? (
+                      /* Edit Form */
+                      <div className="space-y-4">
+                        <div>
+                          <Input
+                            value={editItemForm.title}
+                            onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
+                            placeholder="Task title..."
+                            className="w-full text-lg font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <textarea
+                            value={editItemForm.description}
+                            onChange={(e) => setEditItemForm({ ...editItemForm, description: e.target.value })}
+                            placeholder="Task description..."
+                            rows={2}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex space-x-2">
+                            {(['low', 'medium', 'high'] as const).map((priority) => (
+                              <button
+                                key={priority}
+                                onClick={() => setEditItemForm({ ...editItemForm, priority })}
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm transition-all duration-200 ${
+                                  editItemForm.priority === priority
+                                    ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white shadow-md`
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                              >
+                                {getPriorityIcon(priority)}
+                                <span className="capitalize">{priority}</span>
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={cancelEdit}
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={() => handleEditItem(item.id)}
+                              disabled={!editItemForm.title.trim()}
+                              size="sm"
+                              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Display Mode */
+                      <div className="flex items-start space-x-4">
+                        {/* Checkbox */}
+                        <button
+                          onClick={() => handleToggleComplete(item.id)}
+                          disabled={toggleingItemId === item.id || !canEditItems()}
+                          className={`relative flex-shrink-0 w-6 h-6 rounded-lg border-2 transition-all duration-300 ${
+                            item.isCompleted
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-transparent shadow-lg'
+                              : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                          } ${!canEditItems() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {toggleingItemId === item.id ? (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                            </div>
+                          ) : item.isCompleted ? (
+                            <CheckIcon className="w-4 h-4 text-white absolute inset-0 m-auto" />
+                          ) : null}
+                        </button>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className={`text-lg font-semibold transition-all duration-300 ${
+                                item.isCompleted 
+                                  ? 'text-gray-500 line-through' 
+                                  : 'text-gray-900 group-hover:text-purple-600'
+                              }`}>
+                                {item.title}
+                              </h3>
+                              
+                              {item.description && (
+                                <p className={`mt-2 text-gray-600 leading-relaxed ${
+                                  item.isCompleted ? 'opacity-60 line-through' : ''
+                                }`}>
+                                  {item.description}
+                                </p>
+                              )}
+
+                              {/* Priority Badge */}
+                              <div className="flex items-center space-x-3 mt-3">
+                                <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getPriorityColor(item.priority || 'medium')} text-white shadow-sm`}>
+                                  {getPriorityIcon(item.priority || 'medium')}
+                                  <span className="capitalize">{item.priority || 'medium'}</span>
+                                </div>
+
+                                <span className="text-xs text-gray-500">
+                                  Created {new Date(item.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            {canEditItems() && (
+                              <div className="flex items-center space-x-1 ml-4">
+                                <button
+                                  onClick={() => startEdit(item)}
+                                  className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200"
+                                  title="Edit task"
+                                >
+                                  <EditIcon className="w-4 h-4" />
+                                </button>
+                                
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  disabled={deletingItemId === item.id}
+                                  className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200 disabled:opacity-50"
+                                  title="Delete task"
+                                >
+                                  {deletingItemId === item.id ? (
+                                    <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                                  ) : (
+                                    <TrashIcon className="w-4 h-4" />
+                                  )}
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
-              )}
+              ))}
+            </div>
+          ) : (
+            /* Empty State */
+            <div className="text-center py-16">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 rounded-3xl opacity-50"></div>
+                <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-3xl p-12">
+                  <ListIcon className="w-20 h-20 text-gray-300 mx-auto mb-6" />
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                    No Tasks Yet
+                  </h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    Start by adding your first task to this list. You can create tasks, set priorities, and track your progress.
+                  </p>
+                  {canEditItems() ? (
+                    <Button
+                      onClick={() => setShowAddForm(true)}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <PlusIcon className="w-5 h-5 mr-2" />
+                      Add Your First Task
+                    </Button>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      Only the owner can add tasks to this list
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

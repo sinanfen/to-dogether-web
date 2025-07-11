@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react'
 import { Sidebar } from './sidebar'
 import { MenuIcon } from '@/components/ui/icons'
 import { useAuth } from '@/contexts/auth'
+import { PageLoading } from '@/components/loading'
 
 interface AppLayoutProps {
   children: React.ReactNode
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -83,6 +84,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
+  }
+
+  // Show loading only on initial load, not on every auth check
+  if (isLoading && !user) {
+    return <PageLoading />
   }
 
   return (

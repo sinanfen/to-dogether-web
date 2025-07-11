@@ -87,7 +87,6 @@ export default function ProfilePage() {
     try {
       setLoading(true)
       setError(null)
-      console.log('💾 Profile güncelleniyor...', formData)
 
       const updateData: UpdateUserProfileRequest = {
         username: formData.username,
@@ -96,7 +95,6 @@ export default function ProfilePage() {
       }
 
       await api.updateUserProfile(updateData)
-      console.log('✅ Profile güncellendi')
       
       // Refresh user data from server
       await refreshUser()
@@ -215,17 +213,25 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {/* User ID (Read-only) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   User ID
                 </label>
-                <div className="text-gray-900 font-mono text-sm bg-gray-50 p-3 rounded-lg border">
-                  {user.id}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl opacity-50"></div>
+                  <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-purple-300">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">#</span>
+                      </div>
+                      <span className="text-gray-900 font-mono text-sm font-medium">#{user.id}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Username */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Username
                 </label>
                 {editMode ? (
@@ -236,15 +242,23 @@ export default function ProfilePage() {
                     className="w-full"
                   />
                 ) : (
-                  <div className="text-gray-900 p-3 bg-gray-50 rounded-lg border">
-                    {user.username}
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl opacity-50"></div>
+                    <div className="relative bg-white/80 backdrop-blur-sm border border-blue-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-blue-300">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                          <UserIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-gray-900 font-medium">{user.username}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Color Code */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Profile Color
                 </label>
                 {editMode ? (
@@ -264,25 +278,62 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border">
-                    <div 
-                      className="w-8 h-8 rounded-full border border-gray-300"
-                      style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
-                    />
-                    <span className="text-gray-900 font-mono text-sm">
-                      {user.colorCode || '#8B5CF6'}
-                    </span>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl opacity-50"></div>
+                    <div className="relative bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-gray-300">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            <div 
+                              className="w-10 h-10 rounded-xl border-2 border-white shadow-lg ring-1 ring-gray-200"
+                              style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
+                            />
+                            <div className="absolute inset-0 rounded-xl ring-2 ring-white/50 group-hover:ring-white/80 transition-all duration-300"></div>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-medium">Your Color</p>
+                            <span className="text-gray-600 font-mono text-sm">
+                              {user.colorCode || '#8B5CF6'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="w-6 h-6 rounded-lg opacity-50 group-hover:opacity-100 transition-opacity duration-300" 
+                             style={{ backgroundColor: user.colorCode || '#8B5CF6' }}>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Member Since */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Member Since
                 </label>
-                <div className="text-gray-900 p-3 bg-gray-50 rounded-lg border">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl opacity-50"></div>
+                  <div className="relative bg-white/80 backdrop-blur-sm border border-emerald-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-emerald-300">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-gray-900 font-medium">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          }) : 'N/A'}
+                        </p>
+                        <p className="text-gray-500 text-sm">
+                          {user.createdAt ? `${Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days ago` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -335,12 +386,12 @@ export default function ProfilePage() {
                               onClick={copyInviteCode}
                               size="sm"
                               variant="outline"
-                              className="flex-shrink-0"
+                              className="flex-shrink-0 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-md transition-all duration-300 group"
                             >
                               {inviteCopied ? (
-                                <CheckIcon className="h-4 w-4" />
+                                <CheckIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                               ) : (
-                                <CopyIcon className="h-4 w-4" />
+                                <CopyIcon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                               )}
                             </Button>
                           </div>
@@ -416,10 +467,10 @@ export default function ProfilePage() {
                 <Button 
                   onClick={handleLogout}
                   variant="outline"
-                  className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                  className="w-full text-red-600 border-red-300 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg transition-all duration-300 group"
                 >
-                  <LogoutIcon className="h-4 w-4 mr-2" />
-                  Sign Out
+                  <LogoutIcon className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                  <span>Sign Out</span>
                 </Button>
               </div>
             </div>

@@ -7,6 +7,8 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: 'swap',
+  fallback: ['system-ui', 'arial'],
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -72,7 +74,7 @@ export default function RootLayout({
         <meta name="msapplication-starturl" content="/" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       </head>
-      <body className="min-h-screen bg-gray-50 font-sans antialiased">
+      <body className="min-h-screen bg-gray-50 font-sans antialiased" suppressHydrationWarning={true}>
         <AuthProvider>
           {children}
         </AuthProvider>

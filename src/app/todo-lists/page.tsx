@@ -1,7 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/layout'
-import { ListIcon, PlusIcon, EditIcon, TrashIcon, UsersIcon } from '@/components/ui/icons'
+import { ListIcon, PlusIcon, EditIcon, TrashIcon, UsersIcon, EyeIcon, EyeSlashIcon } from '@/components/ui/icons'
 import { Button } from '@/components/ui'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -19,6 +19,10 @@ export default function TodoListsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deletingListId, setDeletingListId] = useState<number | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; list: TodoList | null }>({
+    isOpen: false,
+    list: null
+  })
 
   useEffect(() => {
     if (!user) {
@@ -33,22 +37,43 @@ export default function TodoListsPage() {
     try {
       setLoading(true)
       setError(null)
-      console.log('📝 Todo lists yükleniyor...')
-
       // Load user's own lists
       const userLists = await api.getTodoLists()
-      console.log('✅ My lists loaded:', userLists)
       
-      // Add frontend computed fields
-      const enhancedUserLists = userLists.map(list => ({
-        ...list,
-        colorCode: '#8B5CF6', // Default purple
-        itemsCount: list.items?.length || 0,
-        completedItemsCount: list.items?.filter(item => item.status === 1).length || 0,
-        completionPercentage: list.items?.length ? 
-          Math.round((list.items.filter(item => item.status === 1).length / list.items.length) * 100) : 0,
-        priority: 'medium' as const
-      }))
+      // Enhance user lists with real item counts (like dashboard)
+      const enhancedUserLists = await Promise.all(
+        userLists.map(async (list) => {
+          try {
+            // Get real item counts for each list
+            const items = await api.getTodoItems(list.id)
+            const completedItems = items.filter(item => item.status === 1).length
+            const totalItems = items.length
+            const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+            
+            return {
+              ...list,
+              colorCode: list.colorCode,
+              itemsCount: totalItems,
+              completedItemsCount: completedItems,
+              completionPercentage: completionPercentage,
+              priority: 'medium' as const,
+              isShared: list.isShared
+            }
+          } catch (error) {
+            console.error(`Failed to fetch items for list ${list.id}:`, error)
+            // Fallback to basic list info if items fetch fails
+            return {
+              ...list,
+              colorCode: list.colorCode,
+              itemsCount: 0,
+              completedItemsCount: 0,
+              completionPercentage: 0,
+              priority: 'medium' as const,
+              isShared: list.isShared
+            }
+          }
+        })
+      )
       
       setMyLists(enhancedUserLists)
 
@@ -56,18 +81,41 @@ export default function TodoListsPage() {
       if (user?.partner) {
         try {
           const partnerTodoLists = await api.getPartnerTodoLists()
-          console.log('✅ Partner lists loaded:', partnerTodoLists)
           
-          // Add frontend computed fields
-          const enhancedPartnerLists = partnerTodoLists.map(list => ({
-            ...list,
-            colorCode: '#EC4899', // Default pink for partner
-            itemsCount: list.items?.length || 0,
-            completedItemsCount: list.items?.filter(item => item.status === 1).length || 0,
-            completionPercentage: list.items?.length ? 
-              Math.round((list.items.filter(item => item.status === 1).length / list.items.length) * 100) : 0,
-            priority: 'medium' as const
-          }))
+          // Enhance partner lists with real item counts (like dashboard)
+          const enhancedPartnerLists = await Promise.all(
+            partnerTodoLists.map(async (list) => {
+              try {
+                // Get real item counts for each list
+                const items = await api.getTodoItems(list.id)
+                const completedItems = items.filter(item => item.status === 1).length
+                const totalItems = items.length
+                const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+                
+                return {
+                  ...list,
+                  colorCode: list.colorCode,
+                  itemsCount: totalItems,
+                  completedItemsCount: completedItems,
+                  completionPercentage: completionPercentage,
+                  priority: 'medium' as const,
+                  isShared: list.isShared
+                }
+              } catch (error) {
+                console.error(`Failed to fetch items for list ${list.id}:`, error)
+                // Fallback to basic list info if items fetch fails
+                return {
+                  ...list,
+                  colorCode: list.colorCode,
+                  itemsCount: 0,
+                  completedItemsCount: 0,
+                  completionPercentage: 0,
+                  priority: 'medium' as const,
+                  isShared: list.isShared
+                }
+              }
+            })
+          )
           
           setPartnerLists(enhancedPartnerLists)
         } catch (partnerError) {
@@ -76,7 +124,6 @@ export default function TodoListsPage() {
           setPartnerLists([])
         }
       } else {
-        console.log('👤 No partner, skipping partner lists')
         setPartnerLists([])
       }
     } catch (err) {
@@ -87,16 +134,23 @@ export default function TodoListsPage() {
     }
   }
 
-  const handleDeleteList = async (listId: number) => {
-    if (!confirm('Are you sure you want to delete this list? This action cannot be undone.')) {
-      return
-    }
+  const openDeleteDialog = (list: TodoList) => {
+    setDeleteDialog({ isOpen: true, list })
+  }
+
+  const closeDeleteDialog = () => {
+    setDeleteDialog({ isOpen: false, list: null })
+  }
+
+  const handleDeleteList = async () => {
+    if (!deleteDialog.list) return
 
     try {
-      setDeletingListId(listId)
-      await api.deleteTodoList(listId)
+      setDeletingListId(deleteDialog.list.id)
+      await api.deleteTodoList(deleteDialog.list.id)
       
-      // Refresh the lists
+      // Close dialog and refresh the lists
+      closeDeleteDialog()
       await loadTodoLists()
     } catch (err) {
       setError('Failed to delete todo list')
@@ -108,11 +162,7 @@ export default function TodoListsPage() {
 
   const currentLists = activeTab === 'my' ? myLists : partnerLists
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 80) return 'from-green-500 to-emerald-500'
-    if (percentage >= 50) return 'from-yellow-500 to-orange-500'
-    return 'from-red-500 to-pink-500'
-  }
+
 
   if (!user) {
     return (
@@ -138,12 +188,50 @@ export default function TodoListsPage() {
           </div>
           
           <div className="mt-4 lg:mt-0">
-            <Link href="/todo-lists/new">
-              <Button variant="gradient" size="lg" className="flex items-center space-x-2">
-                <PlusIcon className="h-5 w-5" />
-                <span>Create New List</span>
-              </Button>
-            </Link>
+            <div className="relative group">
+              {/* Animated Border Background */}
+              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                   style={{
+                     background: 'conic-gradient(from var(--angle), transparent 70%, rgb(168 85 247) 80%, rgb(236 72 153) 85%, rgb(239 68 68) 90%, transparent 95%)',
+                     animation: 'border-spin 2s linear infinite',
+                     padding: '2px'
+                   }}>
+              </div>
+              
+              <Link href="/todo-lists/new">
+                <Button 
+                  variant="gradient" 
+                  size="lg" 
+                  className="relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-400 hover:via-pink-400 hover:to-red-400"
+                >
+                  {/* Inner Background */}
+                  <div className="absolute inset-[1px] bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg group-hover:from-purple-400 group-hover:via-pink-400 group-hover:to-red-400 transition-all duration-500"></div>
+                  
+                  {/* Content */}
+                  <div className="relative z-10 flex items-center space-x-2">
+                    <div className="relative">
+                      <PlusIcon className="h-5 w-5 transition-all duration-500 group-hover:scale-110 group-hover:rotate-90" />
+                      {/* Plus icon glow effect */}
+                      <div className="absolute inset-0 h-5 w-5 opacity-0 group-hover:opacity-50 transition-opacity duration-500">
+                        <PlusIcon className="h-5 w-5 text-white/60 scale-150 animate-ping" />
+                      </div>
+                    </div>
+                    <span className="font-semibold tracking-wide">Create New List</span>
+                    
+                    {/* Magic sparkle */}
+                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping"></div>
+                  </div>
+                  
+                  {/* Shimmer Effect */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-slow rounded-lg"></div>
+                  
+                  {/* Sparkle Effects */}
+                  <div className="absolute top-1 right-3 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.2s'}}></div>
+                  <div className="absolute bottom-1 left-4 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.4s'}}></div>
+                  <div className="absolute top-1/2 right-8 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.6s'}}></div>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -213,10 +301,30 @@ export default function TodoListsPage() {
                 return (
                   <div
                     key={list.id}
-                    className={`group bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+                    className={`group bg-white rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${
                       isDeleting ? 'opacity-50' : ''
                     }`}
+                    style={{
+                      border: `2px solid ${list.colorCode}`,
+                      boxShadow: `0 0 0 1px ${list.colorCode}20, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`
+                    }}
                   >
+                    {/* Subtle gradient overlay */}
+                    <div 
+                      className="absolute inset-0 opacity-5 pointer-events-none"
+                      style={{
+                        background: `linear-gradient(135deg, ${list.colorCode}00 0%, ${list.colorCode}20 50%, ${list.colorCode}00 100%)`
+                      }}
+                    />
+                    
+                    {/* Animated border glow on hover */}
+                    <div 
+                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                      style={{
+                        background: `linear-gradient(45deg, ${list.colorCode}10, ${list.colorCode}05, ${list.colorCode}10)`,
+                        boxShadow: `inset 0 0 20px ${list.colorCode}20`
+                      }}
+                    />
                     {/* List Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3 flex-1">
@@ -229,29 +337,40 @@ export default function TodoListsPage() {
                         </h3>
                       </div>
                       
-                      {activeTab === 'my' && (
-                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Link href={`/todo-lists/${list.id}/edit`}>
+                      <div className="flex items-center space-x-1">
+                        {/* Privacy Status Icon */}
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" title={list.isShared ? "Public - Shared with you" : "Private - Partner's private list"}>
+                          {list.isShared ? (
+                            <EyeIcon className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <EyeSlashIcon className="h-4 w-4 text-gray-500" />
+                          )}
+                        </div>
+                        
+                        {activeTab === 'my' && (
+                          <>
+                            <Link href={`/todo-lists/${list.id}/edit`}>
+                              <button 
+                                className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-lg transition-colors"
+                                disabled={isDeleting}
+                              >
+                                <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
+                              </button>
+                            </Link>
                             <button 
-                              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                              onClick={() => openDeleteDialog(list)}
+                              className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-lg transition-colors"
                               disabled={isDeleting}
                             >
-                              <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
+                              {isDeleting ? (
+                                <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                              ) : (
+                                <TrashIcon className="h-4 w-4 text-gray-600 hover:text-red-600" />
+                              )}
                             </button>
-                          </Link>
-                          <button 
-                            onClick={() => handleDeleteList(list.id)}
-                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? (
-                              <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                            ) : (
-                              <TrashIcon className="h-4 w-4 text-gray-600 hover:text-red-600" />
-                            )}
-                          </button>
-                        </div>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     {/* Description */}
@@ -271,11 +390,23 @@ export default function TodoListsPage() {
                           {list.completionPercentage || 0}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                         <div 
-                          className={`bg-gradient-to-r ${getProgressColor(list.completionPercentage || 0)} h-2 rounded-full transition-all duration-300`}
-                          style={{ width: `${list.completionPercentage || 0}%` }}
-                        />
+                          className="h-2 rounded-full transition-all duration-300 relative"
+                          style={{ 
+                            width: `${list.completionPercentage || 0}%`,
+                            background: `linear-gradient(90deg, ${list.colorCode}80, ${list.colorCode})`
+                          }}
+                        >
+                          {/* Shimmer effect */}
+                          <div 
+                            className="absolute inset-0 opacity-30"
+                            style={{
+                              background: `linear-gradient(90deg, transparent, ${list.colorCode}40, transparent)`,
+                              animation: 'shimmer 2s infinite'
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -285,11 +416,6 @@ export default function TodoListsPage() {
                         <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full capitalize">
                           {list.priority}
                         </span>
-                        {list.isShared && (
-                          <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
-                            Shared
-                          </span>
-                        )}
                         {list.category && (
                           <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full capitalize">
                             {list.category}
@@ -308,14 +434,61 @@ export default function TodoListsPage() {
                       </div>
                       
                       <Link href={`/todo-lists/${list.id}`}>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={isDeleting}
-                        >
-                          View Details
-                        </Button>
+                        <div className="relative opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                          <button
+                            className="relative group/btn text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden cursor-pointer"
+                            style={{
+                              background: `linear-gradient(135deg, ${list.colorCode}, ${list.colorCode}dd)`,
+                              boxShadow: `0 4px 6px -1px ${list.colorCode}40, 0 2px 4px -1px ${list.colorCode}20`
+                            }}
+                            disabled={isDeleting}
+                          >
+                            {/* Background shimmer effect */}
+                            <div 
+                              className="absolute inset-0 opacity-0 group-hover/btn:opacity-30 transition-opacity duration-500 animate-shimmer rounded-lg"
+                              style={{
+                                background: `linear-gradient(90deg, transparent, ${list.colorCode}40, transparent)`
+                              }}
+                            ></div>
+                            
+                            {/* Content */}
+                            <div className="relative z-10 flex items-center space-x-2">
+                              <span className="text-sm">View Details</span>
+                              <svg 
+                                className="w-4 h-4 transition-all duration-300 group-hover/btn:translate-x-1 group-hover/btn:scale-110" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            
+                            {/* Glow effect */}
+                            <div 
+                              className="absolute inset-0 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 blur-xl"
+                              style={{
+                                background: `linear-gradient(135deg, ${list.colorCode}20, ${list.colorCode}10)`
+                              }}
+                            ></div>
+                            
+                            {/* Sparkle effects */}
+                            <div 
+                              className="absolute top-1 right-2 w-1 h-1 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping" 
+                              style={{
+                                backgroundColor: list.colorCode,
+                                animationDelay: '0.1s'
+                              }}
+                            ></div>
+                            <div 
+                              className="absolute bottom-1 left-3 w-0.5 h-0.5 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping" 
+                              style={{
+                                backgroundColor: list.colorCode,
+                                animationDelay: '0.3s'
+                              }}
+                            ></div>
+                          </button>
+                        </div>
                       </Link>
                     </div>
                   </div>
@@ -409,6 +582,77 @@ export default function TodoListsPage() {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        {deleteDialog.isOpen && deleteDialog.list && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/20 backdrop-blur-md transition-all duration-300"
+              onClick={closeDeleteDialog}
+            />
+            
+            {/* Dialog */}
+            <div className="relative bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 mx-4 max-w-md w-full transform transition-all duration-300 scale-100 hover:scale-[1.02]">
+              {/* Header */}
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <TrashIcon className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Todo List</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="mb-6">
+                <p className="text-gray-700 mb-3">
+                  Are you sure you want to delete <span className="font-semibold text-gray-900">&ldquo;{deleteDialog.list.title}&rdquo;</span>?
+                </p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-4 h-4 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-red-700">
+                      <p className="font-medium mb-1">This will permanently delete:</p>
+                      <ul className="text-xs space-y-1">
+                        <li>• The todo list and its description</li>
+                        <li>• All {deleteDialog.list.itemsCount || 0} todo items in this list</li>
+                        <li>• All associated data and progress</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={closeDeleteDialog}
+                  className="px-4 py-2"
+                  disabled={deletingListId === deleteDialog.list.id}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteList}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
+                  disabled={deletingListId === deleteDialog.list.id}
+                >
+                  {deletingListId === deleteDialog.list.id ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-red-200 border-t-red-400 rounded-full animate-spin" />
+                      <span>Deleting...</span>
+                    </div>
+                  ) : (
+                    'Delete List'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   )

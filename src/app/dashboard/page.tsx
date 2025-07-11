@@ -16,11 +16,11 @@ import {
 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import type { DashboardStats, Activity, TodoList, Partner } from '@/types/api'
+import type { DashboardStats, TodoList, Partner } from '@/types/api'
+import { RecentActivities } from '@/components/recent-activities'
 
 interface DashboardData {
   stats: DashboardStats
-  activities: Activity[]
   recentLists: TodoList[]
   partner?: Partner
 }
@@ -38,102 +38,82 @@ export default function DashboardPage() {
     
     // Auth yüklendi ve user yok, login'e yönlendir
     if (!user) {
-      console.log('👋 User yok, login\'e yönlendiriliyor...')
       router.push('/auth/login')
       return
     }
     
-    console.log('✅ User var, dashboard verisi yükleniyor...', user)
 
     const loadDashboardData = async () => {
       try {
         setLoading(true)
-        console.log('📊 Dashboard verisi yükleniyor...')
         
         // Real API calls
-        const [stats] = await Promise.all([
+        const [stats, myLists, partnerLists] = await Promise.all([
           api.getDashboardStats(),
-          // api.getRecentActivities(), // TODO: Backend'de yoksa mock
-          // api.getTodoLists(), // TODO: Recent lists için
+          api.getTodoLists(),
+          api.getPartnerTodoLists().catch(() => []), // Partner yoksa empty array
         ])
         
-        console.log('✅ Dashboard stats loaded:', stats)
+        // Combine all lists and sort by updated date (most recent first)
+        const allLists = [...myLists, ...partnerLists]
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+          .slice(0, 5) // Show only 5 most recent
         
-        const mockData: DashboardData = {
+        // Enhance lists with computed fields and real item counts
+        const enhancedLists = await Promise.all(
+          allLists.map(async (list) => {
+            try {
+              // Get real item counts for each list
+              const items = await api.getTodoItems(list.id)
+              const completedItems = items.filter(item => item.status === 1).length
+              const totalItems = items.length
+              const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+              
+              return {
+                ...list,
+                colorCode: list.colorCode,
+                isShared: list.isShared,
+                itemsCount: totalItems,
+                completedItemsCount: completedItems,
+                completionPercentage: completionPercentage,
+                priority: 'medium' as const,
+                category: 'general'
+              }
+            } catch (error) {
+              console.error(`Failed to fetch items for list ${list.id}:`, error)
+              // Fallback to basic list info if items fetch fails
+              return {
+                ...list,
+                colorCode: list.colorCode,
+                isShared: list.isShared,
+                itemsCount: 0,
+                completedItemsCount: 0,
+                completionPercentage: 0,
+                priority: 'medium' as const,
+                category: 'general'
+              }
+            }
+          })
+        )
+        
+        const dashboardData: DashboardData = {
           stats: {
             ...stats,
             // Frontend computed fields
-            totalLists: Math.ceil(stats.totalTasks / 4), // Estimate
+            totalLists: myLists.length + partnerLists.length,
             completedLists: Math.ceil(stats.completedToday / 2), // Estimate  
             totalItems: stats.totalTasks,
             completedItems: stats.completedToday,
             completionRate: stats.totalTasks > 0 ? Math.round((stats.completedToday / stats.totalTasks) * 100) : 0,
-            activeStreakDays: 7, // Mock
+            activeStreakDays: 7, // Mock for now
             thisWeekCompleted: stats.completedToday,
             thisMonthCompleted: stats.completedToday * 7 // Estimate
           },
-          activities: [
-            {
-              id: 1,
-              type: 'item_completed',
-              description: 'Completed "Buy groceries" in Shopping List',
-              userId: user.id,
-              user: user,
-              targetType: 'item',
-              targetId: 1,
-              createdAt: new Date().toISOString()
-            },
-            {
-              id: 2,
-              type: 'list_created',
-              description: 'Created new list "Weekend Plans"',
-              userId: user.id,
-              user: user,
-              targetType: 'list',
-              targetId: 2,
-              createdAt: new Date(Date.now() - 3600000).toISOString()
-            }
-          ],
-          recentLists: [
-            {
-              id: 1,
-              title: 'Shopping List',
-              description: 'Weekly grocery shopping',
-              ownerId: user.id,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              colorCode: '#8B5CF6',
-              createdBy: user,
-              isShared: true,
-              items: [],
-              itemsCount: 8,
-              completedItemsCount: 6,
-              completionPercentage: 75,
-              priority: 'medium',
-              category: 'shopping'
-            },
-            {
-              id: 2,
-              title: 'Home Cleaning',
-              description: 'Spring cleaning tasks',
-              ownerId: user.id,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              colorCode: '#10B981',
-              createdBy: user,
-              isShared: false,
-              items: [],
-              itemsCount: 5,
-              completedItemsCount: 2,
-              completionPercentage: 40,
-              priority: 'low',
-              category: 'household'
-            }
-          ],
+          recentLists: enhancedLists,
           partner: user.partner
         }
         
-        setDashboardData(mockData)
+        setDashboardData(dashboardData)
       } catch (err) {
         setError('Failed to load dashboard data')
         console.error('Dashboard loading error:', err)
@@ -205,7 +185,6 @@ export default function DashboardPage() {
   }
 
   const stats = dashboardData?.stats
-  const activities = dashboardData?.activities || []
   const recentLists = dashboardData?.recentLists || []
   const partner = dashboardData?.partner
 
@@ -323,8 +302,15 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Recent Lists</h2>
               <Link href="/todo-lists">
-                <Button variant="outline" size="sm">
-                  View All
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
+                >
+                  <span className="mr-1">View All</span>
+                  <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </Button>
               </Link>
             </div>
@@ -414,33 +400,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                <TargetIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              
-              <div className="space-y-3">
-                {activities.length > 0 ? activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 line-clamp-2">
-                        {activity.description}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(activity.createdAt).toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="text-gray-500 text-sm text-center py-4">
-                    No recent activity
-                  </p>
-                )}
-              </div>
-            </div>
+            {/* Recent Activities */}
+            <RecentActivities limit={5} />
 
             {/* Quick Actions */}
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white">

@@ -28,54 +28,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        console.log('🔄 User loading başladı...')
         setIsLoading(true)
-        const currentUser = await api.getCurrentUser()
-        console.log('✅ User loaded:', currentUser)
         
-        // Try to load partner information separately
-        try {
-          const partnerOverview = await api.getPartnerOverview()
-          console.log('✅ Partner bilgisi yüklendi:', partnerOverview)
-          
-          // Add partner to user object
-          const userWithPartner = {
-            ...currentUser,
-            partner: {
-              id: partnerOverview.id,
-              username: partnerOverview.username,
-              colorCode: partnerOverview.colorCode,
-              avatar: undefined,
-              createdAt: partnerOverview.createdAt,
-              updatedAt: partnerOverview.createdAt,
-              isConnected: true,
-              connectionDate: partnerOverview.createdAt
+        // Paralel olarak user ve partner bilgilerini yükle
+        const [currentUser, partnerOverview] = await Promise.allSettled([
+          api.getCurrentUser(),
+          api.getPartnerOverview()
+        ])
+        
+        if (currentUser.status === 'fulfilled') {
+          if (partnerOverview.status === 'fulfilled') {
+            // Add partner to user object
+            const userWithPartner = {
+              ...currentUser.value,
+              partner: {
+                id: partnerOverview.value.id,
+                username: partnerOverview.value.username,
+                colorCode: partnerOverview.value.colorCode,
+                avatar: undefined,
+                createdAt: partnerOverview.value.createdAt,
+                updatedAt: partnerOverview.value.createdAt,
+                isConnected: true,
+                connectionDate: partnerOverview.value.createdAt
+              }
             }
+            
+            setUser(userWithPartner)
+          } else {
+            // Set user without partner
+            setUser(currentUser.value)
           }
-          
-          setUser(userWithPartner)
-        } catch (partnerError) {
-          console.log('👤 No partner found or partner loading failed:', partnerError)
-          // Set user without partner
-          setUser(currentUser)
+        } else {
+          setUser(null)
         }
-      } catch (error) {
-        console.log('❌ User load failed:', error)
-        // User not logged in or token expired
+      } catch {
         setUser(null)
       } finally {
-        console.log('🏁 User loading bitti')
         setIsLoading(false)
       }
     }
     
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
-    console.log('🔑 Token check:', { token: token ? 'var' : 'yok' })
     
     if (token) {
       loadUser()
     } else {
-      console.log('🚫 Token yok, loading false')
       setIsLoading(false)
     }
   }, [])
@@ -87,7 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Try to load partner information separately
       try {
         const partnerOverview = await api.getPartnerOverview()
-        console.log('✅ Partner bilgisi yüklendi:', partnerOverview)
         
         // Add partner to user object
         const userWithPartner = {
@@ -105,8 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setUser(userWithPartner)
-      } catch (partnerError) {
-        console.log('👤 No partner found or partner loading failed:', partnerError)
+      } catch {
         // Set user without partner
         setUser(currentUser)
       }
@@ -117,22 +112,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const login = async (data: LoginRequest) => {
-    console.log('🔐 Login başlatıldı:', data.username)
     setIsLoading(true)
     setError(null)
     
     try {
-      const response = await api.login(data)
-      console.log('✅ API Login başarılı:', response)
+      await api.login(data)
       
       // Login başarılı olduktan sonra gerçek user bilgisini yükle
       const currentUser = await api.getCurrentUser()
-      console.log('👤 User bilgisi yüklendi:', currentUser)
       
       // Try to load partner information separately
       try {
         const partnerOverview = await api.getPartnerOverview()
-        console.log('✅ Partner bilgisi yüklendi:', partnerOverview)
         
         // Add partner to user object
         const userWithPartner = {
@@ -150,12 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setUser(userWithPartner)
-      } catch (partnerError) {
-        console.log('👤 No partner found or partner loading failed:', partnerError)
+      } catch {
         // Set user without partner
         setUser(currentUser)
       }
-      console.log('🔗 Dashboard\'a yönlendiriliyor...')
       router.push('/dashboard')
     } catch (error) {
       console.error('❌ Login hatası:', error)
@@ -167,22 +156,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (data: RegisterRequest) => {
-    console.log('📝 Register başlatıldı:', data.username)
     setIsLoading(true)
     setError(null)
     
     try {
       const response = await api.register(data)
-      console.log('✅ API Register başarılı:', response)
       
       // Register başarılı olduktan sonra gerçek user bilgisini yükle
       const currentUser = await api.getCurrentUser()
-      console.log('👤 User bilgisi yüklendi:', currentUser)
       
       // Try to load partner information separately
       try {
         const partnerOverview = await api.getPartnerOverview()
-        console.log('✅ Partner bilgisi yüklendi:', partnerOverview)
         
         // Add partner to user object
         const userWithPartner = {
@@ -200,17 +185,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setUser(userWithPartner)
-      } catch (partnerError) {
-        console.log('👤 No partner found or partner loading failed:', partnerError)
+      } catch {
         // Set user without partner
         setUser(currentUser)
       }
       
       if (response.inviteToken) {
-        console.log('🔗 Invite success sayfasına yönlendiriliyor...')
         router.push(`/auth/invite-success?token=${response.inviteToken}`)
       } else {
-        console.log('🔗 Dashboard\'a yönlendiriliyor...')
         router.push('/dashboard')
       }
     } catch (error) {

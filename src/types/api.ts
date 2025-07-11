@@ -34,12 +34,12 @@ export interface TodoList {
   title: string
   description?: string
   ownerId: number
+  isShared: boolean
+  colorCode: string
   createdAt: string
   updatedAt: string
   items?: TodoItem[]
   // Frontend computed fields
-  colorCode?: string
-  isShared?: boolean
   sharedWith?: number[]
   itemsCount?: number
   completedItemsCount?: number
@@ -96,14 +96,39 @@ export interface Comment {
 
 export interface Activity {
   id: number
-  type: 'list_created' | 'list_updated' | 'item_added' | 'item_completed' | 'item_assigned' | 'partner_connected'
-  description: string
   userId: number
-  user: User
-  targetType: 'list' | 'item' | 'partner'
-  targetId: number
-  metadata?: Record<string, unknown>
+  username: string
+  userColorCode: string
+  activityType: number // Backend enum: 0=Created, 1=Updated, 2=Deleted, 3=Completed, 4=Reopened, 5=ItemAdded, 6=ItemUpdated, 7=ItemDeleted, 8=ItemCompleted, 9=ItemReopened
+  entityType: number // Backend enum: 0=TodoList, 1=TodoItem
+  entityId: number
+  entityTitle: string
+  message: string
   createdAt: string
+}
+
+// Enum mappings for backend compatibility (exact match with C# backend)
+export enum ActivityType {
+  Created = 0,
+  Updated = 1,
+  Deleted = 2,
+  Completed = 3,
+  Reopened = 4,
+  ItemAdded = 5,
+  ItemUpdated = 6,
+  ItemDeleted = 7,
+  ItemCompleted = 8,
+  ItemReopened = 9
+}
+
+export enum EntityType {
+  TodoList = 0,
+  TodoItem = 1
+}
+
+export interface RecentActivitiesResponse {
+  activities: Activity[]
+  totalCount: number
 }
 
 export interface DashboardStats {
@@ -176,12 +201,8 @@ export interface AcceptInviteRequest {
 export interface CreateTodoListRequest {
   title: string
   description?: string
-  colorCode: string
-  priority: 'low' | 'medium' | 'high'
-  category?: string
-  dueDate?: string
-  isShared?: boolean
-  initialItems?: string[]
+  isShared: boolean
+  colorCode?: string
 }
 
 export interface UpdateTodoListRequest extends Partial<CreateTodoListRequest> {
@@ -191,15 +212,16 @@ export interface UpdateTodoListRequest extends Partial<CreateTodoListRequest> {
 export interface CreateTodoItemRequest {
   title: string
   description?: string
-  priority: 'low' | 'medium' | 'high'
-  assignedTo?: number
-  dueDate?: string
-  tags?: string[]
+  severity: number // 0=low, 1=medium, 2=high (backend uses severity not priority)
 }
 
-export interface UpdateTodoItemRequest extends Partial<CreateTodoItemRequest> {
+export interface UpdateTodoItemRequest {
   id: number
-  isCompleted?: boolean
+  title?: string
+  description?: string
+  status?: number // 0=pending, 1=done
+  severity?: number // 0=low, 1=medium, 2=high
+  order?: number
 }
 
 export interface UpdateUserProfileRequest {

@@ -225,17 +225,41 @@ export default function NewTodoListPage() {
       setIsLoading(true)
       setError(null)
 
+      // Step 1: Create the todo list with colorCode
       const todoListData: CreateTodoListRequest = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
-        colorCode: formData.colorCode,
-        category: formData.category,
-        priority: formData.priority,
         isShared: formData.isShared,
-        initialItems: initialItems.length > 0 ? initialItems : undefined
+        colorCode: formData.colorCode
       }
 
       const newList = await api.createTodoList(todoListData)
+
+      // Step 2: Add initial items if any
+      if (initialItems.length > 0) {
+        
+        // Priority mapping for items
+        const priorityToSeverity = (priority: string): number => {
+          switch (priority) {
+            case 'high': return 2
+            case 'medium': return 1
+            case 'low': return 0
+            default: return 1
+          }
+        }
+
+        // Add each initial item
+        const itemPromises = initialItems
+          .filter(item => item.trim()) // Filter out empty items
+          .map((itemTitle) => 
+            api.createTodoItem(newList.id, {
+              title: itemTitle.trim(),
+              severity: priorityToSeverity(formData.priority) // Use list priority as default for items
+            })
+          )
+
+        await Promise.all(itemPromises)
+      }
       
       // Redirect to the new list
       router.push(`/todo-lists/${newList.id}`)
@@ -522,6 +546,32 @@ export default function NewTodoListPage() {
                         )}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Sharing Settings */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-3">
+                    Sharing Settings
+                  </label>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <h3 className="font-medium text-gray-900">Share with Partner</h3>
+                      <p className="text-sm text-gray-600">Allow your partner to view and edit this list</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, isShared: !prev.isShared }))}
+                      className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                        formData.isShared ? 'bg-purple-500' : 'bg-gray-300'
+                      }`}
+                    >
+                      <div 
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
+                          formData.isShared ? 'translate-x-6' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
 

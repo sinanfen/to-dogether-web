@@ -237,7 +237,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="flex items-center justify-center space-x-3 w-full px-4 py-4 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group touch-manipulation active:scale-[0.98]"
+            className="flex items-center justify-center space-x-3 w-full px-4 py-4 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group touch-manipulation active:scale-[0.98] cursor-pointer"
             style={{ minHeight: '56px' }}
             aria-label="Logout from application"
           >

@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/auth'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import Link from 'next/link'
-import type { PartnerOverview, AcceptInviteRequest } from '@/types/api'
+import type { PartnerOverview, AcceptInviteRequest, Activity } from '@/types/api'
 
 export default function PartnerOverviewPage() {
   const { user, refreshUser } = useAuth()
@@ -28,20 +28,39 @@ export default function PartnerOverviewPage() {
     const loadPartnerData = async () => {
       try {
         setLoading(true)
-        console.log('👥 Partner data yükleniyor...')
         
         if (user.partner) {
           // Load full partner overview data
           const overview = await api.getPartnerOverview()
-          console.log('✅ Partner overview loaded:', overview)
+          // Calculate real collaboration stats
+          const sharedLists = overview.todoLists?.filter(list => list.isShared) || []
+          const totalItems = overview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0
+          const completedItems = overview.todoLists?.reduce((total, list) => 
+            total + (list.items?.filter(item => item.status === 1).length || 0), 0) || 0
+          const highPriorityItems = overview.todoLists?.reduce((total, list) => 
+            total + (list.items?.filter(item => item.severity === 2).length || 0), 0) || 0
           
+          // Get recent activities for partner
+          let recentActivities: Activity[] = []
+          try {
+            const activitiesResponse = await api.getRecentActivities(10)
+            recentActivities = activitiesResponse.activities.filter(activity => 
+              activity.userId === overview.id
+            )
+          } catch (error) {
+            console.log('Could not load partner activities:', error)
+          }
+
           // Map backend response to frontend interface
           const mappedData: PartnerOverview = {
             id: overview.id,
             username: overview.username,
             colorCode: overview.colorCode,
             createdAt: overview.createdAt,
-            todoLists: overview.todoLists,
+            todoLists: overview.todoLists.map(list => ({
+              ...list,
+              colorCode: list.colorCode
+            })),
             // Create computed partner object for compatibility
             partner: {
               id: overview.id,
@@ -52,17 +71,32 @@ export default function PartnerOverviewPage() {
               isConnected: true,
               connectionDate: overview.createdAt
             },
-            sharedLists: overview.todoLists || [],
-            recentActivities: [], // Mock for now
+            sharedLists: sharedLists,
+            recentActivities: recentActivities,
             stats: {
-              totalTasks: overview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0,
-              completedToday: 0, // Would need item status calculation
-              pendingTasks: overview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0,
-              highPriorityTasks: overview.todoLists?.reduce((total, list) => 
-                total + (list.items?.filter(item => item.severity === 2).length || 0), 0) || 0,
+              totalTasks: totalItems,
+              completedToday: completedItems,
+              pendingTasks: totalItems - completedItems,
+              highPriorityTasks: highPriorityItems,
               myTasks: 0, // Would need user comparison
-              partnerTasks: overview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0,
-              partnerUsername: overview.username
+              partnerTasks: totalItems,
+              partnerUsername: overview.username,
+              // Frontend computed fields
+              totalLists: overview.todoLists?.length || 0,
+              completedLists: sharedLists.filter(list => 
+                (list.items?.filter(item => item.status === 1).length || 0) === (list.items?.length || 0)
+              ).length,
+              totalItems: totalItems,
+              completedItems: completedItems,
+              completionRate: totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+            },
+            collaborationStats: {
+              sharedListsCount: sharedLists.length,
+              collaborativeItemsCount: sharedLists.reduce((total, list) => 
+                total + (list.items?.length || 0), 0),
+              lastCollaboration: sharedLists.length > 0 ? 
+                sharedLists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt :
+                overview.createdAt
             }
           }
           
@@ -363,8 +397,15 @@ export default function PartnerOverviewPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Shared Lists</h2>
               <Link href="/todo-lists">
-                <Button variant="outline" size="sm">
-                  View All
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
+                >
+                  <span className="mr-1">View All</span>
+                  <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </Button>
               </Link>
             </div>
@@ -415,9 +456,12 @@ export default function PartnerOverviewPage() {
                   <UsersIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-600 mb-4">No shared lists yet</p>
                   <Link href="/todo-lists/new">
-                    <Button variant="outline">
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Create First Shared List
+                    <Button 
+                      variant="outline"
+                      className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90" />
+                      <span>Create First Shared List</span>
                     </Button>
                   </Link>
                 </div>
@@ -436,7 +480,7 @@ export default function PartnerOverviewPage() {
                     <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-900 line-clamp-2">
-                        {activity.description}
+                        {activity.message}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(activity.createdAt).toLocaleTimeString()}

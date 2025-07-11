@@ -20,7 +20,6 @@ export default function RegisterPage() {
   // Auth Guard: Eğer zaten login olmuşsa dashboard'a yönlendir
   useEffect(() => {
     if (!authLoading && user) {
-      console.log('🔄 User zaten login olmuş, dashboard\'a yönlendiriliyor...', user)
       router.push('/dashboard')
     }
   }, [user, authLoading, router])

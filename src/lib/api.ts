@@ -12,7 +12,7 @@ import type {
   UpdateUserProfileRequest,
   DashboardStats,
   PartnerOverview,
-  Activity,
+  RecentActivitiesResponse,
   AcceptInviteRequest
 } from '@/types/api'
 
@@ -56,7 +56,6 @@ class ApiClient {
     }
 
     try {
-      console.log('API Request:', { url, config })
       const response = await fetch(url, config)
       
       if (!response.ok) {
@@ -137,8 +136,8 @@ class ApiClient {
     return this.request<DashboardStats>('/dashboard/stats')
   }
 
-  async getRecentActivities(limit: number = 10): Promise<Activity[]> {
-    return this.request<Activity[]>(`/dashboard/activities?limit=${limit}`)
+  async getRecentActivities(limit: number = 10): Promise<RecentActivitiesResponse> {
+    return this.request<RecentActivitiesResponse>(`/activities/recent?limit=${limit}`)
   }
 
   // Partner Methods
@@ -168,8 +167,16 @@ class ApiClient {
     return this.request<TodoList[]>('/todolists/partner')
   }
 
-  async getTodoList(id: number): Promise<TodoList> {
-    return this.request<TodoList>(`/todolists/${id}`)
+  async findTodoList(id: number): Promise<TodoList | null> {
+    // Backend'de tek todo list getiren endpoint olmadığı için
+    // önce tüm listeleri getirip ID'ye göre buluyoruz
+    const [myLists, partnerLists] = await Promise.all([
+      this.getTodoLists(),
+      this.getPartnerTodoLists()
+    ])
+    
+    const allLists = [...myLists, ...partnerLists]
+    return allLists.find(list => list.id === id) || null
   }
 
   async createTodoList(data: CreateTodoListRequest): Promise<TodoList> {
@@ -218,8 +225,23 @@ class ApiClient {
   }
 
   async toggleTodoItem(listId: number, itemId: number): Promise<TodoItem> {
-    return this.request<TodoItem>(`/todolists/${listId}/items/${itemId}/toggle`, {
-      method: 'PATCH',
+    // Backend'de toggle endpoint'i olmadığı için
+    // önce item'ları getirip o item'ı bulup status'unu değiştiriyoruz
+    const items = await this.getTodoItems(listId)
+    const item = items.find(i => i.id === itemId)
+    
+    if (!item) {
+      throw new Error('Todo item not found')
+    }
+    
+    const newStatus = item.status === 0 ? 1 : 0 // 0: Pending, 1: Done
+    
+    return this.request<TodoItem>(`/todolists/${listId}/items/${itemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        ...item,
+        status: newStatus
+      }),
     })
   }
 }

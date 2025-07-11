@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Custom CSS Variables and Animations */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 /* PWA and Mobile Optimizations */
 @layer base {
   html {
@@ -280,6 +287,32 @@
   .animate-slide-up-mobile {
     animation: slide-up-mobile 0.3s ease-out;
   }
+
+  /* Animated Border Effects */
+  .animate-border-spin {
+    --angle: 0deg;
+    background: conic-gradient(from var(--angle), transparent 60%, rgb(168 85 247) 70%, rgb(236 72 153) 80%, rgb(219 39 119) 90%, transparent 100%);
+    animation: border-spin 2s linear infinite;
+  }
+
+  .btn-glow {
+    position: relative;
+    background: linear-gradient(135deg, rgb(147 51 234) 0%, rgb(219 39 119) 100%);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: conic-gradient(from var(--angle), transparent 60%, rgb(168 85 247) 70%, rgb(236 72 153) 80%, rgb(219 39 119) 90%, transparent 100%);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: subtract;
+    animation: border-spin 2s linear infinite;
+  }
 }
 
 /* Mobile-optimized animations */
@@ -356,5 +389,35 @@
 @media (orientation: landscape) and (max-height: 500px) {
   .mobile-landscape-compact {
     @apply py-2;
+  }
+}
+
+/* Custom Border Animation Keyframes */
+@keyframes border-spin {
+  from {
+    --angle: 0deg;
+  }
+  to {
+    --angle: 360deg;
+  }
+}
+
+@keyframes pulse-glow {
+  from {
+    box-shadow: 0 0 5px rgb(168 85 247 / 0.4), 0 0 20px rgb(168 85 247 / 0.2), 0 0 35px rgb(168 85 247 / 0.1);
+  }
+  to {
+    box-shadow: 0 0 10px rgb(168 85 247 / 0.6), 0 0 30px rgb(168 85 247 / 0.4), 0 0 50px rgb(168 85 247 / 0.2);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
