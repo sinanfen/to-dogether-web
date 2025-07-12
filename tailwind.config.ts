@@ -107,7 +107,14 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addVariant }: { addVariant: (name: string, selector: string) => void }) {
+      addVariant('autofill', '&:-webkit-autofill')
+      addVariant('autofill-hover', '&:-webkit-autofill:hover')
+      addVariant('autofill-focus', '&:-webkit-autofill:focus')
+      addVariant('autofill-active', '&:-webkit-autofill:active')
+    }
+  ],
 }
 
 export default config 

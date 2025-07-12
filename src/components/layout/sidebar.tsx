@@ -216,18 +216,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <ListIcon className="h-5 w-5" />
                 <span className="font-medium">New Todo List</span>
               </Link>
-              
-              {!user?.partner && (
-                <Link
-                  href="/profile"
-                  onClick={handleNavClick}
-                  className="flex items-center space-x-3 px-4 py-3 rounded-xl text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 transition-all duration-200 hover:shadow-md active:scale-[0.98] touch-manipulation"
-                  style={{ minHeight: '48px' }}
-                >
-                  <HeartIcon className="h-5 w-5" />
-                  <span className="font-medium">Connect Partner</span>
-                </Link>
-              )}
             </div>
           </div>
         </nav>

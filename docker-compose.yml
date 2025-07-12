@@ -1,0 +1,31 @@
+services:
+  to-dogether-web:
+    image: to.dogether.web:latest
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+    restart: unless-stopped
+    networks:
+      - to-dogether-network
+      - traefik_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.to-dogether-web.rule=Host(`to-dogether.sinanfen.me`)"
+      - "traefik.http.routers.to-dogether-web.entrypoints=websecure"
+      - "traefik.http.routers.to-dogether-web.tls=true"
+      - "traefik.http.services.to-dogether-web.loadbalancer.server.port=3010"
+      - "traefik.docker.network=traefik_default"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      
+networks:
+  to-dogether-network:
+    driver: bridge
+  traefik_default:
+    external: true

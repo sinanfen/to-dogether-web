@@ -11,7 +11,7 @@ import { api } from '@/lib/api'
 import type { TodoList } from '@/types/api'
 
 export default function TodoListsPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'my' | 'partner'>('my')
   const [myLists, setMyLists] = useState<TodoList[]>([])
@@ -25,13 +25,19 @@ export default function TodoListsPage() {
   })
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect to login if user is not authenticated and auth loading is complete
+    if (!user && !authLoading) {
       router.push('/auth/login')
       return
     }
 
+    // Don't load data if user is not authenticated yet
+    if (!user) {
+      return
+    }
+
     loadTodoLists()
-  }, [user, router]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, router, authLoading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadTodoLists = async () => {
     try {
@@ -164,7 +170,8 @@ export default function TodoListsPage() {
 
 
 
-  if (!user) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -173,6 +180,11 @@ export default function TodoListsPage() {
         </div>
       </div>
     )
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return null // Will be redirected by useEffect
   }
 
   return (

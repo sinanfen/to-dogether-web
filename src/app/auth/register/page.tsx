@@ -96,17 +96,22 @@ export default function RegisterPage() {
 
             {/* Invite Token Section */}
             <div className="border-t border-gray-200 pt-6">
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="mb-4">
+                <div className="flex items-center space-x-3">
                 <input
                   type="checkbox"
                   id="hasInviteToken"
                   checked={hasInviteToken}
                   onChange={(e) => setHasInviteToken(e.target.checked)}
-                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                    className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
                 />
                 <label htmlFor="hasInviteToken" className="text-sm font-medium text-gray-700 cursor-pointer">
                   Do you have an invite token from your partner?
                 </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 ml-8">
+                  Check if you received an invite token from your partner
+                </p>
               </div>
               
               {hasInviteToken && (

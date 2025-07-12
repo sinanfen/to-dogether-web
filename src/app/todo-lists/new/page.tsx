@@ -132,7 +132,7 @@ const templates: TodoListTemplate[] = [
 ]
 
 export default function NewTodoListPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   
   const [currentStep, setCurrentStep] = useState<'template' | 'form'>('template')
@@ -152,11 +152,12 @@ export default function NewTodoListPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect to login if user is not authenticated and auth loading is complete
+    if (!user && !authLoading) {
       router.push('/auth/login')
       return
     }
-  }, [user, router])
+  }, [user, router, authLoading])
 
   const colorOptions = [
     { name: 'Purple', value: '#8B5CF6' },
@@ -290,7 +291,8 @@ export default function NewTodoListPage() {
     setInitialItems(prev => prev.map((item, i) => i === index ? value : item))
   }
 
-  if (!user) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -299,6 +301,11 @@ export default function NewTodoListPage() {
         </div>
       </div>
     )
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return null // Will be redirected by useEffect
   }
 
   return (
@@ -463,7 +470,7 @@ export default function NewTodoListPage() {
                         onChange={handleInputChange}
                         placeholder="Add a brief description..."
                         rows={3}
-                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
+                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
                       />
                     </div>
                   </div>
@@ -584,13 +591,13 @@ export default function NewTodoListPage() {
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {initialItems.map((item, index) => (
                         <div key={index} className="flex items-center space-x-2">
-                          <input
-                            type="text"
-                            value={item}
-                            onChange={(e) => updateInitialItem(index, e.target.value)}
-                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            placeholder="Enter task..."
-                          />
+                                                <input
+                        type="text"
+                        value={item}
+                        onChange={(e) => updateInitialItem(index, e.target.value)}
+                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Enter task..."
+                      />
                           <button
                             type="button"
                             onClick={() => removeInitialItem(index)}
@@ -675,7 +682,10 @@ export default function NewTodoListPage() {
                     disabled={!formData.title.trim() || isLoading}
                   >
                     {isLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        <span>Creating...</span>
+                      </>
                     ) : (
                       <>
                         <ListIcon className="h-5 w-5" />

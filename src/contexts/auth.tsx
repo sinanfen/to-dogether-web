@@ -105,8 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set user without partner
         setUser(currentUser)
       }
-    } catch (error) {
-      console.error('Failed to refresh user:', error)
+    } catch {
       setUser(null)
     }
   }
@@ -147,7 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       router.push('/dashboard')
     } catch (error) {
-      console.error('❌ Login hatası:', error)
       setError('Login failed. Please check your credentials.')
       throw error
     } finally {
@@ -190,13 +188,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser)
       }
       
+      // Eğer invite token varsa invite-success sayfasına, yoksa welcome sayfasına yönlendir
       if (response.inviteToken) {
         router.push(`/auth/invite-success?token=${response.inviteToken}`)
       } else {
-        router.push('/dashboard')
+        router.push('/auth/welcome')
       }
     } catch (error) {
-      console.error('❌ Register hatası:', error)
       setError('Registration failed. Please try again.')
       throw error
     } finally {
@@ -211,8 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await api.logout()
       setUser(null)
       router.push('/auth/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
+    } catch {
       // Force logout locally even if API call fails
       setUser(null)
       router.push('/auth/login')

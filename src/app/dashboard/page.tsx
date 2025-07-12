@@ -10,7 +10,6 @@ import {
   ListIcon, 
   CheckIcon, 
   TargetIcon, 
-  UserIcon,
   PlusIcon,
   ShareIcon
 } from '@/components/ui/icons'
@@ -211,7 +210,7 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            {partner ? (
+            {partner && (
               <Link href="/partner">
                 <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 hover:bg-white/30 transition-all duration-200 cursor-pointer">
                   <div className="flex items-center space-x-2">
@@ -227,16 +226,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              </Link>
-            ) : (
-              <Link href="/profile">
-                <Button 
-                  variant="outline" 
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
-                >
-                  <UserIcon className="h-4 w-4 mr-2" />
-                  Connect Partner
-                </Button>
               </Link>
             )}
           </div>

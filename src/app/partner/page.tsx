@@ -1,33 +1,54 @@
 'use client'
 
 import { AppLayout } from '@/components/layout'
-import { HeartIcon, UsersIcon, ListIcon, CheckIcon, TargetIcon, PlusIcon, ShareIcon } from '@/components/ui/icons'
-import { Button, Input } from '@/components/ui'
+import { HeartIcon, UsersIcon, ListIcon, CheckIcon, TargetIcon, PlusIcon, ClipboardIcon } from '@/components/ui/icons'
+import { Button } from '@/components/ui'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import Link from 'next/link'
-import type { PartnerOverview, AcceptInviteRequest, Activity } from '@/types/api'
+import type { PartnerOverview, Activity } from '@/types/api'
 
 export default function PartnerOverviewPage() {
-  const { user, refreshUser } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [partnerData, setPartnerData] = useState<PartnerOverview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [inviteCode, setInviteCode] = useState('')
-  const [connectingPartner, setConnectingPartner] = useState(false)
+  const [inviteToken, setInviteToken] = useState<string | null>(null)
+  const [inviteTokenLoading, setInviteTokenLoading] = useState(false)
+  const [tokenCopied, setTokenCopied] = useState(false)
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect to login if user is not authenticated and auth loading is complete
+    if (!user && !authLoading) {
       router.push('/auth/login')
+      return
+    }
+
+    // Don't load data if user is not authenticated yet
+    if (!user) {
       return
     }
 
     const loadPartnerData = async () => {
       try {
         setLoading(true)
+        
+        // Eğer partner yoksa invite token'ı al
+        if (!user.partner) {
+          setInviteTokenLoading(true)
+          try {
+            const response = await api.getCoupleInviteToken()
+            setInviteToken(response.inviteToken)
+          } catch (err) {
+            console.error('Failed to get invite token:', err)
+            setError('Failed to get invite token')
+          } finally {
+            setInviteTokenLoading(false)
+          }
+        }
         
         if (user.partner) {
           // Load full partner overview data
@@ -117,29 +138,17 @@ export default function PartnerOverviewPage() {
     }
 
     loadPartnerData()
-  }, [user, router])
+  }, [user?.id, user?.partner, router, authLoading])
 
-  const handleConnectPartner = async () => {
-    if (!inviteCode.trim()) return
-
-    try {
-      setConnectingPartner(true)
-      setError(null)
-
-      const connectData: AcceptInviteRequest = {
-        inviteToken: inviteCode.trim()
-      }
-
-      await api.acceptPartnerInvite(connectData)
-      await refreshUser() // Refresh user data to get partner info
-      
-      // Reload the page to get fresh partner data
-      window.location.reload()
+  const copyInviteToken = async () => {
+    if (inviteToken) {
+      try {
+        await navigator.clipboard.writeText(inviteToken)
+        setTokenCopied(true)
+        setTimeout(() => setTokenCopied(false), 2000)
     } catch (err) {
-      setError('Failed to connect with partner. Please check the invite code.')
-      console.error('Partner connection error:', err)
-    } finally {
-      setConnectingPartner(false)
+        console.error('Failed to copy to clipboard:', err)
+      }
     }
   }
 
@@ -149,7 +158,8 @@ export default function PartnerOverviewPage() {
     return 'from-red-500 to-pink-500'
   }
 
-  if (!user) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -160,10 +170,15 @@ export default function PartnerOverviewPage() {
     )
   }
 
+  // Redirect to login if not authenticated
+  if (!user) {
+    return null // Will be redirected by useEffect
+  }
+
   if (loading) {
     return (
       <AppLayout>
-        <div className="space-y-6 animate-pulse">
+        <div className="space-y-6 animate-pulse -mt-4">
           {/* Header Skeleton */}
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center space-x-4 mb-6">
@@ -193,82 +208,86 @@ export default function PartnerOverviewPage() {
   if (!user.partner) {
     return (
       <AppLayout>
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6 -mt-4">
           {/* Header */}
-          <div className="text-center py-12">
+          <div className="text-center py-8">
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
               <HeartIcon className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Connect with Your Partner</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Invite Your Partner</h1>
             <p className="text-gray-600 text-lg">
-              Start planning together by connecting with your partner using their invite code.
+              You need to invite your partner to start planning together. Share your invite code with them!
             </p>
           </div>
 
-          {/* Connect Form */}
+          {/* Invite Section */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-                             Enter Partner&apos;s Invite Code
+              Your Invite Code
             </h2>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-600 font-medium">{error}</p>
+            {inviteTokenLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                <span className="ml-3 text-gray-600">Loading invite code...</span>
               </div>
-            )}
-
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                <p className="text-red-600">{error}</p>
+              </div>
+            ) : inviteToken ? (
             <div className="space-y-4">
-              <Input
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
-                placeholder="Enter invite code..."
-                className="w-full text-center font-mono text-lg"
-                disabled={connectingPartner}
-              />
-              
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                  <p className="text-sm text-purple-700 mb-3 font-medium text-center">
+                    Share this code with your partner:
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <code className="flex-1 bg-white px-4 py-3 rounded-lg border border-purple-300 text-purple-800 font-mono text-lg text-center break-all">
+                      {inviteToken}
+                    </code>
               <Button
-                onClick={handleConnectPartner}
-                disabled={!inviteCode.trim() || connectingPartner}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
-                size="lg"
+                      onClick={copyInviteToken}
+                      variant="outline"
+                      className="flex-shrink-0 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white"
               >
-                {connectingPartner ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <HeartIcon className="h-5 w-5 mr-2" />
-                    Connect with Partner
-                  </>
-                )}
+                      <ClipboardIcon className="h-4 w-4 mr-1 text-current" />
+                      {tokenCopied ? 'Copied!' : 'Copy'}
               </Button>
+                  </div>
             </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-gray-600 mb-4">Don&apos;t have an invite code?</p>
-              <Link href="/profile">
-                <Button variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  <ShareIcon className="h-4 w-4 mr-2" />
-                  Generate Your Invite Code
-                </Button>
-              </Link>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-2">📱 How to share:</h3>
+                  <ol className="text-sm text-blue-700 space-y-1">
+                    <li>1. Copy the code above</li>
+                    <li>2. Send it to your partner</li>
+                                         <li>3. They&apos;ll use it during registration</li>
+                  </ol>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Unable to load invite code</p>
             </div>
+            )}
           </div>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
-              <ListIcon className="h-8 w-8 text-purple-600 mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Shared Todo Lists</h3>
-              <p className="text-gray-600 text-sm">Create and manage todo lists together with your partner.</p>
+          {/* Instructions */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">Getting Started</h3>
+            <div className="space-y-3 text-blue-800">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</div>
+                <p>Share your invite code with your partner</p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</div>
+                                 <p>They&apos;ll register using your code</p>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</div>
+                <p>Start planning together!</p>
             </div>
-            
-            <div className="bg-pink-50 rounded-xl p-6 border border-pink-200">
-              <TargetIcon className="h-8 w-8 text-pink-600 mb-4" />
-                             <h3 className="font-semibold text-gray-900 mb-2">Track Progress</h3>
-               <p className="text-gray-600 text-sm">Monitor each other&apos;s progress and celebrate achievements together.</p>
             </div>
           </div>
         </div>
@@ -277,246 +296,187 @@ export default function PartnerOverviewPage() {
   }
 
   // Partner connected - show overview
-  if (!partnerData) {
-    return (
-      <AppLayout>
-        <div className="text-center py-12">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md mx-auto">
-            <p className="text-red-600 font-medium">{error || 'Failed to load partner data'}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="mt-4"
-              variant="outline"
-            >
-              Retry
-            </Button>
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
-
-  const stats = partnerData.stats
-  const recentLists = partnerData.sharedLists || []
-  const activities = partnerData.recentActivities || []
-
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Partner Header */}
+      <div className="space-y-4 -mt-4">
+        {/* Header */}
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-            <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+          <div className="flex items-center space-x-4 mb-6">
               <div 
-                className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold border-2 border-white/30 backdrop-blur-sm"
-                style={{ backgroundColor: partnerData.colorCode || '#EC4899' }}
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold border-2 border-white/30"
+              style={{ backgroundColor: partnerData?.colorCode || '#EC4899' }}
               >
-                {partnerData.username.charAt(0).toUpperCase()}
+              {partnerData?.username?.charAt(0).toUpperCase() || 'P'}
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{partnerData.username}</h1>
-                <div className="flex items-center space-x-2 mt-1">
-                  <HeartIcon className="h-4 w-4" />
-                  <span className="text-purple-100">Your Planning Partner</span>
-                </div>
-                {partnerData.partner?.connectionDate && (
-                  <p className="text-purple-100 text-sm mt-1">
-                    Connected since {new Date(partnerData.partner.connectionDate).toLocaleDateString()}
+              <h1 className="text-3xl font-bold mb-2">{partnerData?.username || 'Partner'}</h1>
+              <p className="text-white/80 text-lg">
+                Connected since {partnerData?.createdAt ? new Date(partnerData.createdAt).toLocaleDateString() : 'Unknown'}
                   </p>
-                )}
-              </div>
             </div>
-            
-            <Link href="/todo-lists">
-              <Button 
-                variant="outline" 
-                className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Create Shared List
-              </Button>
-            </Link>
           </div>
         </div>
 
-        {/* Partner Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                                 <p className="text-sm font-medium text-gray-600">Partner&apos;s Lists</p>
-                <p className="text-2xl font-bold text-purple-600">{stats?.totalLists || 0}</p>
+                <p className="text-sm font-medium text-gray-600">Total Lists</p>
+                <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.totalLists || 0}</p>
               </div>
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <ListIcon className="h-5 w-5 text-purple-600" />
-              </div>
+              <ListIcon className="h-8 w-8 text-purple-500" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Shared Lists</p>
-                <p className="text-2xl font-bold text-blue-600">{partnerData.collaborationStats?.sharedListsCount || 0}</p>
+                <p className="text-sm font-medium text-gray-600">Total Tasks</p>
+                <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.totalItems || 0}</p>
               </div>
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <UsersIcon className="h-5 w-5 text-blue-600" />
-              </div>
+              <CheckIcon className="h-8 w-8 text-green-500" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{stats?.completedItems || 0}</p>
+                <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.completedItems || 0}</p>
               </div>
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckIcon className="h-5 w-5 text-green-600" />
-              </div>
+              <TargetIcon className="h-8 w-8 text-blue-500" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Progress</p>
-                <p className="text-2xl font-bold text-orange-600">{stats?.completionRate || 0}%</p>
+                <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.completionRate || 0}%</p>
               </div>
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <TargetIcon className="h-5 w-5 text-orange-600" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">%</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Shared Lists */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+        {/* Progress Overview */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Progress Overview</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700">Overall Completion</span>
+              <span className="text-gray-900 font-semibold">{partnerData?.stats?.completionRate || 0}%</span>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(partnerData?.stats?.completionRate || 0)} transition-all duration-500`}
+                style={{ width: `${partnerData?.stats?.completionRate || 0}%` }}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="text-center">
+                <p className="text-gray-600">Completed Tasks</p>
+                <p className="text-lg font-semibold text-green-600">{partnerData?.stats?.completedItems || 0}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-600">Pending Tasks</p>
+                <p className="text-lg font-semibold text-orange-600">{partnerData?.stats?.pendingTasks || 0}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Todo Lists */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Shared Lists</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Recent Todo Lists</h2>
               <Link href="/todo-lists">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
-                >
-                  <span className="mr-1">View All</span>
-                  <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
+              <Button variant="outline" size="sm">
+                View All Lists
                 </Button>
               </Link>
             </div>
 
+          {partnerData?.todoLists && partnerData.todoLists.length > 0 ? (
             <div className="space-y-4">
-              {recentLists.length > 0 ? recentLists.map((list) => (
-                <Link key={list.id} href={`/todo-lists/${list.id}`}>
-                  <div className="group mt-3 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-purple-300">
-                    <div className="flex items-center justify-between mb-3">
+              {partnerData.todoLists.slice(0, 3).map((list) => (
+                <div key={list.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div 
                           className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: list.colorCode }}
+                        style={{ backgroundColor: list.colorCode || '#8B5CF6' }}
                         />
-                        <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
-                          {list.title}
-                        </h3>
-                      </div>
-                      <span className="text-xs text-gray-500 capitalize">
-                        {list.priority} priority
-                      </span>
-                    </div>
-
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-1">
-                      {list.description}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <span className="text-xs text-gray-600">
-                          {list.completedItemsCount}/{list.itemsCount} completed
-                        </span>
-                        <span className="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded-full">
-                          Shared
-                        </span>
-                      </div>
-                      <div className="w-16 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`bg-gradient-to-r ${getProgressColor(list.completionPercentage || 0)} h-2 rounded-full transition-all duration-300`}
-                          style={{ width: `${list.completionPercentage || 0}%` }}
-                        />
+                      <div>
+                        <h3 className="font-medium text-gray-900">{list.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {list.items?.length || 0} items • Updated {new Date(list.updatedAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
+                    <Link href={`/todo-lists/${list.id}`}>
+                      <Button variant="outline" size="sm">
+                        View
+                      </Button>
+                    </Link>
                   </div>
-                </Link>
-              )) : (
+                </div>
+              ))}
+            </div>
+          ) : (
                 <div className="text-center py-8">
-                  <UsersIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">No shared lists yet</p>
+              <ListIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600">No todo lists yet</p>
                   <Link href="/todo-lists/new">
-                    <Button 
-                      variant="outline"
-                      className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
-                    >
-                      <PlusIcon className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90" />
-                      <span>Create First Shared List</span>
+                <Button className="mt-4">
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Create First List
                     </Button>
                   </Link>
                 </div>
               )}
-            </div>
           </div>
 
-          {/* Partner Activity */}
-          <div className="space-y-6">
+        {/* Recent Activities */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activities</h2>
               
-              <div className="space-y-3">
-                {activities.length > 0 ? activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 line-clamp-2">
-                        {activity.message}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(activity.createdAt).toLocaleTimeString()}
-                      </p>
-                    </div>
+          {partnerData?.recentActivities && partnerData.recentActivities.length > 0 ? (
+            <div className="space-y-4">
+              {partnerData.recentActivities.slice(0, 5).map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                    style={{ backgroundColor: partnerData.colorCode || '#EC4899' }}
+                  >
+                    {partnerData.username?.charAt(0).toUpperCase() || 'P'}
                   </div>
-                )) : (
-                  <p className="text-gray-500 text-sm text-center py-4">
-                    No recent activity
-                  </p>
-                )}
-              </div>
+                                     <div className="flex-1">
+                     <p className="text-sm text-gray-900">{activity.message}</p>
+                     <p className="text-xs text-gray-500">{new Date(activity.createdAt).toLocaleDateString()}</p>
             </div>
-
-            {/* Collaboration Stats */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white">
-              <h3 className="text-lg font-semibold mb-4">Collaboration</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-purple-100">Shared Lists</span>
-                  <span className="font-semibold">{partnerData.collaborationStats?.sharedListsCount || 0}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-purple-100">Joint Tasks</span>
-                  <span className="font-semibold">{partnerData.collaborationStats?.collaborativeItemsCount || 0}</span>
+              ))}
                 </div>
-                {partnerData.collaborationStats?.lastCollaboration && (
-                  <div className="pt-2 border-t border-white/20">
-                    <p className="text-xs text-purple-100">
-                      Last worked together: {new Date(partnerData.collaborationStats.lastCollaboration).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </div>
+          ) : (
+            <div className="text-center py-8">
+              <UsersIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600">No recent activities</p>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </AppLayout>

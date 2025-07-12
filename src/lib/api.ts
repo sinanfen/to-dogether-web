@@ -16,7 +16,26 @@ import type {
   AcceptInviteRequest
 } from '@/types/api'
 
-const API_BASE_URL = 'https://localhost:54696'
+// API URL'ini dinamik olarak belirle
+const getApiBaseUrl = () => {
+  // Eğer environment variable varsa onu kullan
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL
+  }
+  
+  // Browser'da çalışıyorsa ve localhost'taysa development API'sini kullan
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'https://localhost:54696'
+    }
+  }
+  
+  // Production API'sini kullan
+  return 'https://to-dogether-api.sinanfen.me'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 class ApiClient {
   private token: string | null = null
@@ -59,14 +78,11 @@ class ApiClient {
       const response = await fetch(url, config)
       
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('API Error Response:', { status: response.status, statusText: response.statusText, body: errorText })
         throw new Error(`API Error: ${response.status} - ${response.statusText}`)
       }
 
       return response.json()
     } catch (error) {
-      console.error('Fetch Error:', error)
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
         throw new Error('Sunucuya bağlanılamadı. Backend çalışıyor mu kontrol edin.')
       }
@@ -123,8 +139,8 @@ class ApiClient {
           method: 'POST',
           body: JSON.stringify({ refreshToken }),
         })
-      } catch (error) {
-        console.error('Logout API call failed:', error)
+      } catch {
+        // Logout API call failed, but we'll still clear the token
       }
     }
     
@@ -156,6 +172,10 @@ class ApiClient {
     return this.request<{ inviteToken: string }>('/partner/generate-invite', {
       method: 'POST',
     })
+  }
+
+  async getCoupleInviteToken(): Promise<{ inviteToken: string }> {
+    return this.request<{ inviteToken: string }>('/couple/invite-token')
   }
 
   // Todo List Methods

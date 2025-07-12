@@ -55,6 +55,34 @@
   input, textarea, select {
     /* Prevent zoom on iOS when focused */
     font-size: 16px;
+    /* Better touch targets */
+    min-height: 44px;
+    /* Prevent iOS zoom on focus */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Prevent iOS zoom on form inputs */
+  @media screen and (max-width: 768px) {
+    input, textarea, select {
+      font-size: 16px !important;
+      transform: translateZ(0);
+    }
+  }
+
+  /* Better mobile form styling */
+  input[type="text"], input[type="email"], input[type="password"], textarea {
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    transition: border-color 0.2s ease;
+  }
+
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
   }
 
   /* Button optimizations for touch */
@@ -420,4 +448,48 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Autofill styling fixes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #111827 !important; /* text-gray-900 */
+  background-color: white !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important; /* border-gray-300 */
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Password field autofill */
+input[type="password"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill:hover,
+input[type="password"]:-webkit-autofill:focus,
+input[type="password"]:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  background-color: white !important;
+  color: #111827 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Focus state for autofilled inputs */
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px white inset, 0 0 0 2px #8b5cf6 !important;
+  border-color: transparent !important;
+}
+
+/* Firefox autofill */
+input:-moz-autofill {
+  background-color: white !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+
+/* Chrome autofill selected */
+input:-webkit-autofill::selection {
+  background-color: #8b5cf6 !important;
+  color: white !important;
 }

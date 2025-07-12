@@ -16,7 +16,7 @@ import { api } from '@/lib/api'
 import type { UpdateTodoListRequest } from '@/types/api'
 
 export default function EditTodoListPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
   const listId = parseInt(params.id as string)
@@ -64,8 +64,14 @@ export default function EditTodoListPage() {
   ]
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect to login if user is not authenticated and auth loading is complete
+    if (!user && !authLoading) {
       router.push('/auth/login')
+      return
+    }
+
+    // Don't load data if user is not authenticated yet
+    if (!user) {
       return
     }
 
@@ -75,7 +81,7 @@ export default function EditTodoListPage() {
     }
 
     loadTodoList()
-  }, [user, router, listId])
+  }, [user, router, listId, authLoading])
 
   const loadTodoList = async () => {
     try {
@@ -89,15 +95,9 @@ export default function EditTodoListPage() {
         return
       }
 
-      // Check if user owns this list
-      if (list.ownerId !== user?.id) {
-        setError('You can only edit your own lists')
-        return
-      }
-
-      // Check if list is shared and user is not owner
-      if (list.isShared && list.ownerId !== user?.id) {
-        setError('You can only edit your own lists')
+      // Check if user owns this list OR if the list is shared
+      if (list.ownerId !== user?.id && !list.isShared) {
+        setError('You can only edit your own lists or shared lists')
         return
       }
 
@@ -156,7 +156,8 @@ export default function EditTodoListPage() {
     }))
   }
 
-  if (!user) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -165,6 +166,11 @@ export default function EditTodoListPage() {
         </div>
       </div>
     )
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return null // Will be redirected by useEffect
   }
 
   if (loading) {
@@ -288,7 +294,7 @@ export default function EditTodoListPage() {
                   onChange={handleInputChange}
                   placeholder="Optional description for your list..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 />
               </div>
             </div>
@@ -349,7 +355,7 @@ export default function EditTodoListPage() {
                             }
                           }}
                           placeholder="#8B5CF6"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       </div>
                     </div>

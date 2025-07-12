@@ -18,8 +18,44 @@
       "purpose": "any maskable"
     },
     {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-384.png",
+      "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
@@ -50,8 +86,8 @@
       "url": "/todo-lists/new",
       "icons": [
         {
-          "src": "/icons/shortcut-new-list.png",
-          "sizes": "96x96",
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]
@@ -63,8 +99,8 @@
       "url": "/partner",
       "icons": [
         {
-          "src": "/icons/shortcut-partner.png",
-          "sizes": "96x96", 
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192", 
           "type": "image/png"
         }
       ]
@@ -76,8 +112,8 @@
       "url": "/profile",
       "icons": [
         {
-          "src": "/icons/shortcut-profile.png",
-          "sizes": "96x96",
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]
@@ -106,29 +142,6 @@
       "text": "description"
     }
   },
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile-dashboard.png",
-      "sizes": "375x812",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "Dashboard view on mobile"
-    },
-    {
-      "src": "/screenshots/mobile-todo-list.png", 
-      "sizes": "375x812",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "Todo list management on mobile"
-    },
-    {
-      "src": "/screenshots/desktop-dashboard.png",
-      "sizes": "1280x720",
-      "type": "image/png", 
-      "platform": "wide",
-      "label": "Dashboard view on desktop"
-    }
-  ],
   "display_override": [
     "window-controls-overlay",
     "standalone",

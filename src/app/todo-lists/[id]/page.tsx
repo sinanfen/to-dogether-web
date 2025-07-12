@@ -40,7 +40,7 @@ const severityToPriority = (severity: number): string => {
 export default function TodoListDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const listId = parseInt(params.id as string)
 
   const [todoList, setTodoList] = useState<TodoList | null>(null)
@@ -49,6 +49,7 @@ export default function TodoListDetailPage() {
   const [addingItem, setAddingItem] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingItemId, setEditingItemId] = useState<number | null>(null)
+  const [savingItemId, setSavingItemId] = useState<number | null>(null)
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null)
   const [toggleingItemId, setToggleingItemId] = useState<number | null>(null)
   
@@ -80,8 +81,14 @@ export default function TodoListDetailPage() {
   }
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect to login if user is not authenticated and auth loading is complete
+    if (!user && !authLoading) {
       router.push('/auth/login')
+      return
+    }
+
+    // Don't load data if user is not authenticated yet
+    if (!user) {
       return
     }
 
@@ -91,7 +98,7 @@ export default function TodoListDetailPage() {
     }
 
     loadTodoList()
-  }, [user, router, listId])
+  }, [user, router, listId, authLoading])
 
   const loadTodoList = async () => {
     try {
@@ -130,8 +137,12 @@ export default function TodoListDetailPage() {
         itemsCount: totalCount,
         completedItemsCount: completedCount,
         completionPercentage: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
-        priority: 'medium' as const
+        priority: 'medium' as const,
+        // Ensure isShared is boolean
+        isShared: Boolean(list.isShared)
       }
+      
+
       
       setTodoList(enhancedList)
     } catch (err) {
@@ -178,6 +189,7 @@ export default function TodoListDetailPage() {
     if (!editItemForm.title.trim()) return
 
     try {
+      setSavingItemId(itemId)
       const itemData: UpdateTodoItemRequest = {
         id: itemId,
         title: editItemForm.title.trim(),
@@ -191,6 +203,8 @@ export default function TodoListDetailPage() {
     } catch (err) {
       setError('Failed to update item')
       console.error('Edit item error:', err)
+    } finally {
+      setSavingItemId(null)
     }
   }
 
@@ -531,7 +545,7 @@ export default function TodoListDetailPage() {
                       onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
                       placeholder="Add task description..."
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={isReadOnlyPartnerList()}
                     />
                   </div>
@@ -573,11 +587,16 @@ export default function TodoListDetailPage() {
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     {addingItem ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        <span>Adding...</span>
+                      </>
                     ) : (
-                      <PlusIcon className="w-4 h-4 mr-2" />
+                      <>
+                        <PlusIcon className="w-4 h-4 mr-2" />
+                        <span>Add Task</span>
+                      </>
                     )}
-                    Add Task
                   </Button>
                 </div>
               </div>
@@ -639,7 +658,7 @@ export default function TodoListDetailPage() {
                             onChange={(e) => setEditItemForm({ ...editItemForm, description: e.target.value })}
                             placeholder="Task description..."
                             rows={2}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                           />
                         </div>
 
@@ -672,11 +691,18 @@ export default function TodoListDetailPage() {
                             </Button>
                             <Button
                               onClick={() => handleEditItem(item.id)}
-                              disabled={!editItemForm.title.trim()}
+                              disabled={!editItemForm.title.trim() || savingItemId === item.id}
                               size="sm"
                               className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
                             >
-                              Save
+                              {savingItemId === item.id ? (
+                                <>
+                                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
+                                  <span>Saving...</span>
+                                </>
+                              ) : (
+                                <span>Save</span>
+                              )}
                             </Button>
                           </div>
                         </div>

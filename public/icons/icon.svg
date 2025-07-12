@@ -1,12 +1,36 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="64" fill="#2563eb"/>
-  <path d="M128 192h256v32H128v-32z" fill="white"/>
-  <path d="M128 256h256v32H128v-32z" fill="white"/>
-  <path d="M128 320h192v32H128v-32z" fill="white"/>
-  <circle cx="160" cy="208" r="8" fill="#60a5fa"/>
-  <circle cx="160" cy="272" r="8" fill="#60a5fa"/>
-  <circle cx="160" cy="336" r="8" fill="#60a5fa"/>
-  <path d="M256 128c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32zm0 48c-8.837 0-16-7.163-16-16s7.163-16 16-16 16 7.163 16 16-7.163 16-16 16z" fill="white"/>
-  <path d="M320 128c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32zm0 48c-8.837 0-16-7.163-16-16s7.163-16 16-16 16 7.163 16 16-7.163 16-16 16z" fill="white"/>
-  <path d="M288 144h16v16h-16v-16z" fill="#60a5fa"/>
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded rectangle background -->
+  <rect width="512" height="512" rx="96" fill="url(#bgGradient)"/>
+  
+  <!-- Heart symbol for couples -->
+  <path d="M256 416c-7.5 0-15-3-20.5-8.5L128 300c-30-30-30-78.5 0-108.5 15-15 35-22.5 54-22.5s39 7.5 54 22.5l20 20 20-20c15-15 35-22.5 54-22.5s39 7.5 54 22.5c30 30 30 78.5 0 108.5L276.5 407.5c-5.5 5.5-13 8.5-20.5 8.5z" fill="url(#heartGradient)" stroke="white" stroke-width="4"/>
+  
+  <!-- Two circles representing couple -->
+  <circle cx="200" cy="180" r="24" fill="white" opacity="0.9"/>
+  <circle cx="312" cy="180" r="24" fill="white" opacity="0.9"/>
+  
+  <!-- Checkmarks inside circles -->
+  <path d="M190 180l6 6 12-12" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M302 180l6 6 12-12" stroke="#EC4899" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Todo list lines -->
+  <rect x="160" y="240" width="80" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="160" y="260" width="120" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="160" y="280" width="100" height="4" rx="2" fill="white" opacity="0.8"/>
+  
+  <rect x="272" y="240" width="80" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="272" y="260" width="120" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="272" y="280" width="100" height="4" rx="2" fill="white" opacity="0.8"/>
 </svg> 

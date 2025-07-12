@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth"
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -12,9 +13,10 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://to-dogether.vercel.app'),
   title: "To-Dogether - Collaborative Todo Lists",
-  description: "Collaborative todo list app for couples. Manage your tasks together.",
-  keywords: ["todo", "collaborative", "couples", "task management", "productivity"],
+  description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
+  keywords: ["todo", "collaborative", "couples", "task management", "productivity", "pwa", "progressive web app"],
   authors: [{ name: "To-Dogether Team" }],
   creator: "To-Dogether",
   publisher: "To-Dogether",
@@ -28,33 +30,80 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "To-Dogether",
+    startupImage: [
+      {
+        url: "/icons/icon-512.png",
+        media: "screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/icon-512.png",
+        media: "screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/icon-512.png",
+        media: "screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/icon-512.png",
+        media: "screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)",
+      },
+    ],
   },
   openGraph: {
     type: "website",
     siteName: "To-Dogether",
     title: "To-Dogether - Collaborative Todo Lists",
-    description: "Collaborative todo list app for couples. Manage your tasks together.",
+    description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
+    images: [
+      {
+        url: "/icons/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "To-Dogether App Icon",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "To-Dogether - Collaborative Todo Lists",
-    description: "Collaborative todo list app for couples. Manage your tasks together.",
+    description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
+    images: ["/icons/icon-512.png"],
   },
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "mask-icon",
+        url: "/icons/icon.svg",
+        color: "#8B5CF6",
+      },
+    ],
   },
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#2563eb" },
-    { media: "(prefers-color-scheme: dark)", color: "#1d4ed8" },
+    { media: "(prefers-color-scheme: light)", color: "#8B5CF6" },
+    { media: "(prefers-color-scheme: dark)", color: "#7C3AED" },
   ],
+  colorScheme: "light dark",
+  viewportFit: "cover",
 }
 
 export default function RootLayout({
@@ -65,18 +114,38 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
-        <link rel="icon" href="/icons/icon.svg" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        {/* PWA Meta Tags */}
         <meta name="application-name" content="To-Dogether" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="To-Dogether" />
-        <meta name="msapplication-starturl" content="/" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="Plan together, achieve together. The perfect todo list app for couples." />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#8B5CF6" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="theme-color" content="#8B5CF6" />
+        
+        {/* Icons */}
+        <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
+        <link rel="mask-icon" href="/icons/icon.svg" color="#8B5CF6" />
+        
+        {/* Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        
+        {/* Splash screens for iOS */}
+        <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
+        
+        {/* Prevent zoom on input focus */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
       </head>
-      <body className="min-h-screen bg-gray-50 font-sans antialiased" suppressHydrationWarning={true}>
+      <body className="min-h-screen bg-gray-50 font-sans antialiased overflow-x-hidden" suppressHydrationWarning={true}>
         <AuthProvider>
           {children}
+          <PWAInstallPrompt />
         </AuthProvider>
       </body>
     </html>

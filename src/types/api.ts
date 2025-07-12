@@ -9,6 +9,7 @@ export interface User {
   partnerId?: number
   partner?: Partner
   settings?: UserSettings
+  inviteToken?: string
 }
 
 export interface Partner {
