@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { AppLayout } from '@/components/layout'
-import { Button, Input } from '@/components/ui'
+import { Button, Input, PriorityDropdown } from '@/components/ui'
 import { 
   PlusIcon, 
   CheckIcon, 
@@ -13,7 +13,7 @@ import {
   XMarkIcon
 } from '@/components/ui/icons'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/auth'
 import { api } from '@/lib/api'
 import type { TodoList, TodoItem, CreateTodoItemRequest, UpdateTodoItemRequest } from '@/types/api'
@@ -42,6 +42,7 @@ export default function TodoListDetailPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const listId = parseInt(params.id as string)
+  const quickAddInputRef = useRef<HTMLInputElement>(null)
 
   const [todoList, setTodoList] = useState<TodoList | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,13 +57,18 @@ export default function TodoListDetailPage() {
   // Form states
   const [newItemForm, setNewItemForm] = useState({
     title: '',
-    description: '',
     priority: 'medium' as 'low' | 'medium' | 'high'
   })
+
+  // Auto focus input after adding item
+  useEffect(() => {
+    if (!addingItem && quickAddInputRef.current) {
+      quickAddInputRef.current.focus()
+    }
+  }, [addingItem])
   
   const [editItemForm, setEditItemForm] = useState({
     title: '',
-    description: '',
     priority: 'medium' as 'low' | 'medium' | 'high'
   })
 
@@ -159,11 +165,8 @@ export default function TodoListDetailPage() {
     try {
       setAddingItem(true)
       
-
-      
       const itemData: CreateTodoItemRequest = {
         title: newItemForm.title.trim(),
-        description: newItemForm.description.trim() || undefined,
         severity: priorityToSeverity(newItemForm.priority)
       }
 
@@ -171,7 +174,6 @@ export default function TodoListDetailPage() {
       
       setNewItemForm({
         title: '',
-        description: '',
         priority: 'medium'
       })
       
@@ -193,13 +195,24 @@ export default function TodoListDetailPage() {
       const itemData: UpdateTodoItemRequest = {
         id: itemId,
         title: editItemForm.title.trim(),
-        description: editItemForm.description.trim() || undefined,
         severity: priorityToSeverity(editItemForm.priority)
       }
 
-      await api.updateTodoItem(listId, itemData)
+      const updatedItem = await api.updateTodoItem(listId, itemData)
+      
+      // Update local state instead of reloading
+      if (todoList) {
+        setTodoList({
+          ...todoList,
+          items: (todoList.items || []).map(item => 
+            item.id === itemId 
+              ? { ...item, title: updatedItem.title, severity: updatedItem.severity, priority: severityToPriority(updatedItem.severity) as 'low' | 'medium' | 'high' }
+              : item
+          )
+        })
+      }
+      
       setEditingItemId(null)
-      await loadTodoList()
     } catch (err) {
       setError('Failed to update item')
       console.error('Edit item error:', err)
@@ -208,28 +221,23 @@ export default function TodoListDetailPage() {
     }
   }
 
-  const handleDeleteItem = async (itemId: number) => {
-    if (!confirm('Are you sure you want to delete this item?')) {
-      return
-    }
-
-    try {
-      setDeletingItemId(itemId)
-      await api.deleteTodoItem(listId, itemId)
-      await loadTodoList()
-    } catch (err) {
-      setError('Failed to delete item')
-      console.error('Delete item error:', err)
-    } finally {
-      setDeletingItemId(null)
-    }
-  }
-
   const handleToggleComplete = async (itemId: number) => {
     try {
       setToggleingItemId(itemId)
-      await api.toggleTodoItem(listId, itemId)
-      await loadTodoList()
+      
+      const updatedItem = await api.toggleTodoItem(listId, itemId)
+      
+      // Update local state instead of reloading
+      if (todoList) {
+        setTodoList({
+          ...todoList,
+          items: (todoList.items || []).map(item => 
+            item.id === itemId 
+              ? { ...item, status: updatedItem.status, isCompleted: updatedItem.status === 1 }
+              : item
+          )
+        })
+      }
     } catch (err) {
       setError('Failed to toggle item')
       console.error('Toggle item error:', err)
@@ -238,30 +246,48 @@ export default function TodoListDetailPage() {
     }
   }
 
+  const handleDeleteItem = async (itemId: number) => {
+    try {
+      setDeletingItemId(itemId)
+      await api.deleteTodoItem(listId, itemId)
+      
+      // Update local state instead of reloading
+      if (todoList) {
+        setTodoList({
+          ...todoList,
+          items: (todoList.items || []).filter(item => item.id !== itemId)
+        })
+      }
+    } catch (err) {
+      setError('Failed to delete item')
+      console.error('Delete item error:', err)
+    } finally {
+      setDeletingItemId(null)
+    }
+  }
+
   const startEdit = (item: TodoItem) => {
+    setEditingItemId(item.id)
     setEditItemForm({
       title: item.title,
-      description: item.description || '',
-      priority: item.priority || 'medium'
+      priority: severityToPriority(item.severity) as 'low' | 'medium' | 'high'
     })
-    setEditingItemId(item.id)
   }
 
   const cancelEdit = () => {
     setEditingItemId(null)
     setEditItemForm({
       title: '',
-      description: '',
       priority: 'medium'
     })
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'from-red-500 to-pink-500'
-      case 'medium': return 'from-yellow-500 to-orange-500'
-      case 'low': return 'from-green-500 to-emerald-500'
-      default: return 'from-gray-500 to-slate-500'
+      case 'high': return 'from-red-600 to-pink-600'
+      case 'medium': return 'from-yellow-600 to-orange-600'
+      case 'low': return 'from-green-600 to-emerald-600'
+      default: return 'from-gray-600 to-slate-600'
     }
   }
 
@@ -521,57 +547,44 @@ export default function TodoListDetailPage() {
                 </div>
               )}
 
-                              <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Task Title
-                    </label>
-                    <Input
-                      value={newItemForm.title}
-                      onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
-                      placeholder="Enter task title..."
-                      className="w-full"
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-                      disabled={isReadOnlyPartnerList()}
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Task Title
+                  </label>
+                  <Input
+                    value={newItemForm.title}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
+                    placeholder="Type task and press Enter..."
+                    className="w-full text-lg"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+                    disabled={isReadOnlyPartnerList()}
+                    autoFocus
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description (Optional)
-                    </label>
-                    <textarea
-                      value={newItemForm.description}
-                      onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
-                      placeholder="Add task description..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isReadOnlyPartnerList()}
-                    />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Priority
+                  </label>
+                  <div className="flex space-x-3">
+                    {(['low', 'medium', 'high'] as const).map((priority) => (
+                      <button
+                        key={priority}
+                        onClick={() => setNewItemForm({ ...newItemForm, priority })}
+                        disabled={isReadOnlyPartnerList()}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 ${
+                          newItemForm.priority === priority
+                            ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white border-transparent shadow-lg font-semibold`
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                        } ${isReadOnlyPartnerList() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {getPriorityIcon(priority)}
+                        <span className="capitalize font-medium">{priority}</span>
+                      </button>
+                    ))}
                   </div>
-
-                                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Priority
-                    </label>
-                    <div className="flex space-x-3">
-                      {(['low', 'medium', 'high'] as const).map((priority) => (
-                        <button
-                          key={priority}
-                          onClick={() => setNewItemForm({ ...newItemForm, priority })}
-                          disabled={isReadOnlyPartnerList()}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 ${
-                            newItemForm.priority === priority
-                              ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white border-transparent shadow-lg`
-                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
-                          } ${isReadOnlyPartnerList() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {getPriorityIcon(priority)}
-                          <span className="capitalize font-medium">{priority}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                </div>
 
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                   <Button
@@ -631,169 +644,277 @@ export default function TodoListDetailPage() {
             )}
           </div>
 
+          {/* Quick Add Input - Always Visible */}
+          {canEditItems() && !isReadOnlyPartnerList() && (
+            <div className="bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-xl p-3 shadow-lg">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
+                <input
+                  ref={quickAddInputRef}
+                  type="text"
+                  placeholder="Add a task..."
+                  className="flex-1 bg-transparent border border-gray-200 rounded-lg px-3 py-2 outline-none text-gray-900 placeholder-gray-500 text-sm focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                  autoFocus
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      e.preventDefault()
+                      const title = e.currentTarget.value.trim()
+                      
+                      try {
+                        setAddingItem(true)
+                        setError(null) // Clear previous errors
+                        
+                        const itemData: CreateTodoItemRequest = {
+                          title,
+                          severity: priorityToSeverity('medium') // Default to medium priority
+                        }
+                        
+                        console.log('Creating todo item:', itemData)
+                        const newItem = await api.createTodoItem(listId, itemData)
+                        
+                        // Update local state instead of reloading
+                        if (todoList) {
+                          setTodoList({
+                            ...todoList,
+                            items: [...(todoList.items || []), {
+                              ...newItem,
+                              isCompleted: false,
+                              priority: 'medium'
+                            }]
+                          })
+                        }
+                        
+                        if (quickAddInputRef.current) {
+                          quickAddInputRef.current.value = ''
+                          quickAddInputRef.current.focus()
+                        }
+                      } catch (err) {
+                        console.error('Quick add item error details:', err)
+                        const errorMessage = err instanceof Error ? err.message : 'Failed to add item'
+                        setError(errorMessage)
+                      } finally {
+                        setAddingItem(false)
+                      }
+                    }
+                  }}
+                  disabled={addingItem}
+                  inputMode="text"
+                  autoComplete="off"
+                  autoCapitalize="sentences"
+                />
+                <PriorityDropdown
+                  value="medium"
+                  onChange={async (priority) => {
+                    if (quickAddInputRef.current && quickAddInputRef.current.value.trim()) {
+                      const title = quickAddInputRef.current.value.trim()
+                      
+                      try {
+                        setAddingItem(true)
+                        setError(null)
+                        
+                        const itemData: CreateTodoItemRequest = {
+                          title,
+                          severity: priorityToSeverity(priority)
+                        }
+                        
+                        const newItem = await api.createTodoItem(listId, itemData)
+                        
+                        // Update local state instead of reloading
+                        if (todoList) {
+                          setTodoList({
+                            ...todoList,
+                            items: [...(todoList.items || []), {
+                              ...newItem,
+                              isCompleted: false,
+                              priority
+                            }]
+                          })
+                        }
+                        
+                        quickAddInputRef.current.value = ''
+                        quickAddInputRef.current.focus()
+                      } catch (err) {
+                        console.error('Quick add item error details:', err)
+                        const errorMessage = err instanceof Error ? err.message : 'Failed to add item'
+                        setError(errorMessage)
+                      } finally {
+                        setAddingItem(false)
+                      }
+                    }
+                  }}
+                  disabled={addingItem}
+                  compact={false}
+                  className="flex-shrink-0 min-w-[120px]"
+                />
+                {addingItem && (
+                  <div className="w-4 h-4 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin flex-shrink-0"></div>
+                )}
+              </div>
+            </div>
+          )}
+
           {todoList.items && todoList.items.length > 0 ? (
-            <div className="space-y-4">
-              {todoList.items.map((item) => (
-                <div key={item.id} className="group relative">
-                  {/* Background gradient based on priority */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-2xl opacity-50`}></div>
-                  
-                  {/* Content */}
-                  <div className={`relative bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:border-gray-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-75 shadow-gray-300/50' : ''}`}>
-                    {editingItemId === item.id ? (
-                      /* Edit Form */
-                      <div className="space-y-4">
-                        <div>
-                          <Input
-                            value={editItemForm.title}
-                            onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
-                            placeholder="Task title..."
-                            className="w-full text-lg font-medium"
-                          />
-                        </div>
-
-                        <div>
-                          <textarea
-                            value={editItemForm.description}
-                            onChange={(e) => setEditItemForm({ ...editItemForm, description: e.target.value })}
-                            placeholder="Task description..."
-                            rows={2}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex space-x-2">
-                            {(['low', 'medium', 'high'] as const).map((priority) => (
-                              <button
-                                key={priority}
-                                onClick={() => setEditItemForm({ ...editItemForm, priority })}
-                                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm transition-all duration-200 ${
-                                  editItemForm.priority === priority
-                                    ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white shadow-md`
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                              >
-                                {getPriorityIcon(priority)}
-                                <span className="capitalize">{priority}</span>
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="flex space-x-2">
-                            <Button
-                              onClick={cancelEdit}
-                              variant="outline"
-                              size="sm"
-                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              onClick={() => handleEditItem(item.id)}
-                              disabled={!editItemForm.title.trim() || savingItemId === item.id}
-                              size="sm"
-                              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                            >
-                              {savingItemId === item.id ? (
-                                <>
-                                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
-                                  <span>Saving...</span>
-                                </>
-                              ) : (
-                                <span>Save</span>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Display Mode */
-                      <div className="flex items-start space-x-4">
-                        {/* Checkbox */}
-                        <button
-                          onClick={() => handleToggleComplete(item.id)}
-                          disabled={toggleingItemId === item.id || !canEditItems()}
-                          className={`relative flex-shrink-0 w-6 h-6 rounded-lg border-2 transition-all duration-300 ${
-                            item.isCompleted
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-transparent shadow-lg'
-                              : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
-                          } ${!canEditItems() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {toggleingItemId === item.id ? (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
+              <div className="p-6 border-b border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900">Task List</h3>
+                <p className="text-sm text-gray-600 mt-1">{todoList.items.length} task{todoList.items.length !== 1 ? 's' : ''}</p>
+              </div>
+              <div className="max-h-[600px] overflow-y-auto">
+                <div className="p-4 space-y-3">
+                  {todoList.items.map((item) => (
+                    <div key={item.id} className="group relative">
+                      {/* Background gradient based on priority */}
+                      <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-xl opacity-30`}></div>
+                      
+                      {/* Content */}
+                      <div className={`relative bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-gray-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-75 shadow-gray-300/50' : ''}`}>
+                        {editingItemId === item.id ? (
+                          /* Edit Form */
+                          <div className="space-y-3">
+                            <div>
+                              <Input
+                                value={editItemForm.title}
+                                onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
+                                placeholder="Task title..."
+                                className="w-full text-base font-medium"
+                                onKeyDown={(e) => e.key === 'Enter' && handleEditItem(item.id)}
+                              />
                             </div>
-                          ) : item.isCompleted ? (
-                            <CheckIcon className="w-4 h-4 text-white absolute inset-0 m-auto" />
-                          ) : null}
-                        </button>
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className={`text-lg font-semibold transition-all duration-300 ${
-                                item.isCompleted 
-                                  ? 'text-gray-500 line-through' 
-                                  : 'text-gray-900 group-hover:text-purple-600'
-                              }`}>
-                                {item.title}
-                              </h3>
-                              
-                              {item.description && (
-                                <p className={`mt-2 text-gray-600 leading-relaxed ${
-                                  item.isCompleted ? 'opacity-60 line-through' : ''
-                                }`}>
-                                  {item.description}
-                                </p>
-                              )}
+                            <div className="flex items-center justify-between">
+                              <div className="flex space-x-2">
+                                {(['low', 'medium', 'high'] as const).map((priority) => (
+                                  <button
+                                    key={priority}
+                                    onClick={() => setEditItemForm({ ...editItemForm, priority })}
+                                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 ${
+                                      editItemForm.priority === priority
+                                        ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white shadow-sm font-semibold`
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    } active:scale-95 touch-manipulation`}
+                                  >
+                                    {getPriorityIcon(priority)}
+                                    <span className="capitalize">{priority}</span>
+                                  </button>
+                                ))}
+                              </div>
 
-                              {/* Priority Badge */}
-                              <div className="flex items-center space-x-3 mt-3">
-                                <div className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getPriorityColor(item.priority || 'medium')} text-white shadow-sm`}>
-                                  {getPriorityIcon(item.priority || 'medium')}
-                                  <span className="capitalize">{item.priority || 'medium'}</span>
+                              <div className="flex space-x-2">
+                                <Button
+                                  onClick={cancelEdit}
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-gray-300 text-gray-700 hover:bg-gray-50 text-xs px-3 py-1.5"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  onClick={() => handleEditItem(item.id)}
+                                  disabled={!editItemForm.title.trim() || savingItemId === item.id}
+                                  size="sm"
+                                  className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-xs px-3 py-1.5"
+                                >
+                                  {savingItemId === item.id ? (
+                                    <>
+                                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
+                                      <span>Saving...</span>
+                                    </>
+                                  ) : (
+                                    <span>Save</span>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Display Mode */
+                          <div className="flex items-start space-x-3">
+                            {/* Checkbox */}
+                            <button
+                              onClick={() => handleToggleComplete(item.id)}
+                              disabled={toggleingItemId === item.id || !canEditItems()}
+                              className={`relative flex-shrink-0 w-6 h-6 rounded-lg border-2 transition-all duration-300 ${
+                                item.isCompleted
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-transparent shadow-lg'
+                                  : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                              } ${!canEditItems() ? 'opacity-50 cursor-not-allowed' : ''} active:scale-95 touch-manipulation`}
+                            >
+                              {toggleingItemId === item.id ? (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                </div>
+                              ) : item.isCompleted ? (
+                                <CheckIcon className="w-3 h-3 text-white absolute inset-0 m-auto" />
+                              ) : null}
+                            </button>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h3 className={`text-base font-semibold transition-all duration-300 ${
+                                    item.isCompleted 
+                                      ? 'text-gray-500 line-through' 
+                                      : 'text-gray-900 group-hover:text-purple-600'
+                                  }`}>
+                                    {item.title}
+                                  </h3>
+                                  
+                                  {item.description && (
+                                    <p className={`mt-1 text-gray-600 text-sm leading-relaxed ${
+                                      item.isCompleted ? 'opacity-60 line-through' : ''
+                                    }`}>
+                                      {item.description}
+                                    </p>
+                                  )}
+
+                                  {/* Priority Badge */}
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getPriorityColor(item.priority || 'medium')} text-white shadow-sm`}>
+                                      {getPriorityIcon(item.priority || 'medium')}
+                                      <span className="capitalize">{item.priority || 'medium'}</span>
+                                    </div>
+
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(item.createdAt).toLocaleDateString()}
+                                    </span>
+                                  </div>
                                 </div>
 
-                                <span className="text-xs text-gray-500">
-                                  Created {new Date(item.createdAt).toLocaleDateString()}
-                                </span>
+                                {/* Actions */}
+                                {canEditItems() && (
+                                  <div className="flex items-center space-x-1 ml-3">
+                                    <button
+                                      onClick={() => startEdit(item)}
+                                      className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 active:scale-95 touch-manipulation"
+                                      title="Edit task"
+                                    >
+                                      <EditIcon className="w-3 h-3" />
+                                    </button>
+                                    
+                                    <button
+                                      onClick={() => handleDeleteItem(item.id)}
+                                      disabled={deletingItemId === item.id}
+                                      className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200 disabled:opacity-50 active:scale-95 touch-manipulation"
+                                      title="Delete task"
+                                    >
+                                      {deletingItemId === item.id ? (
+                                        <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                                      ) : (
+                                        <TrashIcon className="w-3 h-3" />
+                                      )}
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
-
-                            {/* Actions */}
-                            {canEditItems() && (
-                              <div className="flex items-center space-x-1 ml-4">
-                                <button
-                                  onClick={() => startEdit(item)}
-                                  className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200"
-                                  title="Edit task"
-                                >
-                                  <EditIcon className="w-4 h-4" />
-                                </button>
-                                
-                                <button
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  disabled={deletingItemId === item.id}
-                                  className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200 disabled:opacity-50"
-                                  title="Delete task"
-                                >
-                                  {deletingItemId === item.id ? (
-                                    <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                                  ) : (
-                                    <TrashIcon className="w-4 h-4" />
-                                  )}
-                                </button>
-                              </div>
-                            )}
                           </div>
-                        </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           ) : (
             /* Empty State */

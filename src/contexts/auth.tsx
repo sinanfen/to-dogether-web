@@ -3,7 +3,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
-import type { User, LoginRequest, RegisterRequest } from '@/types/api'
+import type { 
+  User, 
+  LoginRequest, 
+  RegisterRequest, 
+  PartnerOverview 
+} from '@/types/api'
 
 interface AuthContextType {
   user: User | null
@@ -38,22 +43,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (currentUser.status === 'fulfilled') {
           if (partnerOverview.status === 'fulfilled') {
-            // Add partner to user object
-            const userWithPartner = {
-              ...currentUser.value,
-              partner: {
-                id: partnerOverview.value.id,
-                username: partnerOverview.value.username,
-                colorCode: partnerOverview.value.colorCode,
-                avatar: undefined,
-                createdAt: partnerOverview.value.createdAt,
-                updatedAt: partnerOverview.value.createdAt,
-                isConnected: true,
-                connectionDate: partnerOverview.value.createdAt
+            // Check if partner overview contains partner data or invite token
+            if ('id' in partnerOverview.value && 'username' in partnerOverview.value) {
+              // Partner exists - add partner to user object
+              const partnerData = partnerOverview.value as PartnerOverview
+              const userWithPartner = {
+                ...currentUser.value,
+                partner: {
+                  id: partnerData.id,
+                  username: partnerData.username,
+                  colorCode: partnerData.colorCode,
+                  avatar: undefined,
+                  createdAt: partnerData.createdAt,
+                  updatedAt: partnerData.createdAt,
+                  isConnected: true,
+                  connectionDate: partnerData.createdAt
+                }
               }
+              
+              setUser(userWithPartner)
+            } else {
+              // No partner - set user without partner
+              setUser(currentUser.value)
             }
-            
-            setUser(userWithPartner)
           } else {
             // Set user without partner
             setUser(currentUser.value)
@@ -85,22 +97,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const partnerOverview = await api.getPartnerOverview()
         
-        // Add partner to user object
-        const userWithPartner = {
-          ...currentUser,
-          partner: {
-            id: partnerOverview.id,
-            username: partnerOverview.username,
-            colorCode: partnerOverview.colorCode,
-            avatar: undefined,
-            createdAt: partnerOverview.createdAt,
-            updatedAt: partnerOverview.createdAt,
-            isConnected: true,
-            connectionDate: partnerOverview.createdAt
+        // Check if partner overview contains partner data or invite token
+        if ('id' in partnerOverview && 'username' in partnerOverview) {
+          // Partner exists - add partner to user object
+          const partnerData = partnerOverview as PartnerOverview
+          const userWithPartner = {
+            ...currentUser,
+            partner: {
+              id: partnerData.id,
+              username: partnerData.username,
+              colorCode: partnerData.colorCode,
+              avatar: undefined,
+              createdAt: partnerData.createdAt,
+              updatedAt: partnerData.createdAt,
+              isConnected: true,
+              connectionDate: partnerData.createdAt
+            }
           }
+          
+          setUser(userWithPartner)
+        } else {
+          // No partner - set user without partner
+          setUser(currentUser)
         }
-        
-        setUser(userWithPartner)
       } catch {
         // Set user without partner
         setUser(currentUser)
@@ -124,22 +143,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const partnerOverview = await api.getPartnerOverview()
         
-        // Add partner to user object
-        const userWithPartner = {
-          ...currentUser,
-          partner: {
-            id: partnerOverview.id,
-            username: partnerOverview.username,
-            colorCode: partnerOverview.colorCode,
-            avatar: undefined,
-            createdAt: partnerOverview.createdAt,
-            updatedAt: partnerOverview.createdAt,
-            isConnected: true,
-            connectionDate: partnerOverview.createdAt
+        // Check if partner overview contains partner data or invite token
+        if ('id' in partnerOverview && 'username' in partnerOverview) {
+          // Partner exists - add partner to user object
+          const partnerData = partnerOverview as PartnerOverview
+          const userWithPartner = {
+            ...currentUser,
+            partner: {
+              id: partnerData.id,
+              username: partnerData.username,
+              colorCode: partnerData.colorCode,
+              avatar: undefined,
+              createdAt: partnerData.createdAt,
+              updatedAt: partnerData.createdAt,
+              isConnected: true,
+              connectionDate: partnerData.createdAt
+            }
           }
+          
+          setUser(userWithPartner)
+        } else {
+          // No partner - set user without partner
+          setUser(currentUser)
         }
-        
-        setUser(userWithPartner)
       } catch {
         // Set user without partner
         setUser(currentUser)
@@ -167,22 +193,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const partnerOverview = await api.getPartnerOverview()
         
-        // Add partner to user object
-        const userWithPartner = {
-          ...currentUser,
-          partner: {
-            id: partnerOverview.id,
-            username: partnerOverview.username,
-            colorCode: partnerOverview.colorCode,
-            avatar: undefined,
-            createdAt: partnerOverview.createdAt,
-            updatedAt: partnerOverview.createdAt,
-            isConnected: true,
-            connectionDate: partnerOverview.createdAt
+        // Check if partner overview contains partner data or invite token
+        if ('id' in partnerOverview && 'username' in partnerOverview) {
+          // Partner exists - add partner to user object
+          const partnerData = partnerOverview as PartnerOverview
+          const userWithPartner = {
+            ...currentUser,
+            partner: {
+              id: partnerData.id,
+              username: partnerData.username,
+              colorCode: partnerData.colorCode,
+              avatar: undefined,
+              createdAt: partnerData.createdAt,
+              updatedAt: partnerData.createdAt,
+              isConnected: true,
+              connectionDate: partnerData.createdAt
+            }
           }
+          
+          setUser(userWithPartner)
+        } else {
+          // No partner - set user without partner
+          setUser(currentUser)
         }
-        
-        setUser(userWithPartner)
       } catch {
         // Set user without partner
         setUser(currentUser)

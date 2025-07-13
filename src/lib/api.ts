@@ -78,7 +78,25 @@ class ApiClient {
       const response = await fetch(url, config)
       
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} - ${response.statusText}`)
+        // Try to get error message from response body
+        let errorMessage = `API Error: ${response.status} - ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch {
+          // If we can't parse the error response, use the default message
+        }
+        throw new Error(errorMessage)
+      }
+
+      // Check if response has content (204 No Content has no body)
+      const contentType = response.headers.get('content-type')
+      if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
+        return {} as T
       }
 
       return response.json()
@@ -157,8 +175,8 @@ class ApiClient {
   }
 
   // Partner Methods
-  async getPartnerOverview(): Promise<PartnerOverview> {
-    return this.request<PartnerOverview>('/partner/overview')
+  async getPartnerOverview(): Promise<PartnerOverview | { message: string; inviteToken: string }> {
+    return this.request<PartnerOverview | { message: string; inviteToken: string }>('/partner/overview')
   }
 
   async acceptPartnerInvite(data: AcceptInviteRequest): Promise<User> {

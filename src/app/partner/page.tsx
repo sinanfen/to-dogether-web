@@ -53,12 +53,23 @@ export default function PartnerOverviewPage() {
         if (user.partner) {
           // Load full partner overview data
           const overview = await api.getPartnerOverview()
+          
+          // Check if overview is PartnerOverview or invite response
+          if ('message' in overview && 'inviteToken' in overview) {
+            // This is an invite response, not partner data
+            setPartnerData(null)
+            return
+          }
+          
+          // Now we know overview is PartnerOverview type
+          const partnerOverview = overview as PartnerOverview
+          
           // Calculate real collaboration stats
-          const sharedLists = overview.todoLists?.filter(list => list.isShared) || []
-          const totalItems = overview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0
-          const completedItems = overview.todoLists?.reduce((total, list) => 
+          const sharedLists = partnerOverview.todoLists?.filter(list => list.isShared) || []
+          const totalItems = partnerOverview.todoLists?.reduce((total, list) => total + (list.items?.length || 0), 0) || 0
+          const completedItems = partnerOverview.todoLists?.reduce((total, list) => 
             total + (list.items?.filter(item => item.status === 1).length || 0), 0) || 0
-          const highPriorityItems = overview.todoLists?.reduce((total, list) => 
+          const highPriorityItems = partnerOverview.todoLists?.reduce((total, list) => 
             total + (list.items?.filter(item => item.severity === 2).length || 0), 0) || 0
           
           // Get recent activities for partner
@@ -66,7 +77,7 @@ export default function PartnerOverviewPage() {
           try {
             const activitiesResponse = await api.getRecentActivities(10)
             recentActivities = activitiesResponse.activities.filter(activity => 
-              activity.userId === overview.id
+              activity.userId === partnerOverview.id
             )
           } catch (error) {
             console.log('Could not load partner activities:', error)
@@ -74,23 +85,23 @@ export default function PartnerOverviewPage() {
 
           // Map backend response to frontend interface
           const mappedData: PartnerOverview = {
-            id: overview.id,
-            username: overview.username,
-            colorCode: overview.colorCode,
-            createdAt: overview.createdAt,
-            todoLists: overview.todoLists.map(list => ({
+            id: partnerOverview.id,
+            username: partnerOverview.username,
+            colorCode: partnerOverview.colorCode,
+            createdAt: partnerOverview.createdAt,
+            todoLists: partnerOverview.todoLists.map(list => ({
               ...list,
               colorCode: list.colorCode
             })),
             // Create computed partner object for compatibility
             partner: {
-              id: overview.id,
-              username: overview.username,
-              colorCode: overview.colorCode,
-              createdAt: overview.createdAt,
-              updatedAt: overview.createdAt, // Same as created for now
+              id: partnerOverview.id,
+              username: partnerOverview.username,
+              colorCode: partnerOverview.colorCode,
+              createdAt: partnerOverview.createdAt,
+              updatedAt: partnerOverview.createdAt, // Same as created for now
               isConnected: true,
-              connectionDate: overview.createdAt
+              connectionDate: partnerOverview.createdAt
             },
             sharedLists: sharedLists,
             recentActivities: recentActivities,
@@ -101,9 +112,9 @@ export default function PartnerOverviewPage() {
               highPriorityTasks: highPriorityItems,
               myTasks: 0, // Would need user comparison
               partnerTasks: totalItems,
-              partnerUsername: overview.username,
+              partnerUsername: partnerOverview.username,
               // Frontend computed fields
-              totalLists: overview.todoLists?.length || 0,
+              totalLists: partnerOverview.todoLists?.length || 0,
               completedLists: sharedLists.filter(list => 
                 (list.items?.filter(item => item.status === 1).length || 0) === (list.items?.length || 0)
               ).length,
@@ -117,7 +128,7 @@ export default function PartnerOverviewPage() {
                 total + (list.items?.length || 0), 0),
               lastCollaboration: sharedLists.length > 0 ? 
                 sharedLists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt :
-                overview.createdAt
+                partnerOverview.createdAt
             }
           }
           

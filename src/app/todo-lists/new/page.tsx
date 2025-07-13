@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppLayout } from '@/components/layout'
-import { Input, Button } from '@/components/ui'
+import { Input, Button, PriorityDropdown, CategoryDropdown } from '@/components/ui'
 import { 
   ListIcon, 
   PlusIcon, 
@@ -147,9 +147,11 @@ export default function NewTodoListPage() {
     isShared: true
   })
   
-  const [initialItems, setInitialItems] = useState<string[]>([])
+  const [initialItems, setInitialItems] = useState<{ title: string; priority: 'low' | 'medium' | 'high' }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [quickAddItem, setQuickAddItem] = useState('')
+  const [quickAddPriority, setQuickAddPriority] = useState<'low' | 'medium' | 'high'>('medium')
 
   useEffect(() => {
     // Only redirect to login if user is not authenticated and auth loading is complete
@@ -158,6 +160,14 @@ export default function NewTodoListPage() {
       return
     }
   }, [user, router, authLoading])
+
+  const handleQuickAddItem = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && quickAddItem.trim()) {
+      e.preventDefault()
+      setInitialItems(prev => [...prev, { title: quickAddItem.trim(), priority: quickAddPriority }])
+      setQuickAddItem('')
+    }
+  }
 
   const colorOptions = [
     { name: 'Purple', value: '#8B5CF6' },
@@ -168,16 +178,6 @@ export default function NewTodoListPage() {
     { name: 'Red', value: '#EF4444' },
     { name: 'Indigo', value: '#6366F1' },
     { name: 'Teal', value: '#14B8A6' },
-  ]
-
-  const categoryOptions = [
-    { value: 'personal', label: 'Personal', icon: '👤' },
-    { value: 'home', label: 'Home', icon: '🏠' },
-    { value: 'work', label: 'Work', icon: '💼' },
-    { value: 'shopping', label: 'Shopping', icon: '🛒' },
-    { value: 'travel', label: 'Travel', icon: '✈️' },
-    { value: 'health', label: 'Health', icon: '💪' },
-    { value: 'other', label: 'Other', icon: '📝' }
   ]
 
   const priorityOptions = [
@@ -196,7 +196,7 @@ export default function NewTodoListPage() {
       priority: template.priority,
       isShared: true
     })
-    setInitialItems(template.items)
+    setInitialItems(template.items.map(item => ({ title: item, priority: 'medium' })))
     setCurrentStep('form')
   }
 
@@ -210,7 +210,7 @@ export default function NewTodoListPage() {
       priority: 'medium',
       isShared: true
     })
-    setInitialItems([])
+    setInitialItems([]) // Empty list for create from scratch
     setCurrentStep('form')
   }
 
@@ -251,11 +251,11 @@ export default function NewTodoListPage() {
 
         // Add each initial item
         const itemPromises = initialItems
-          .filter(item => item.trim()) // Filter out empty items
-          .map((itemTitle) => 
+          .filter(item => item.title.trim()) // Filter out empty items
+          .map((item) => 
             api.createTodoItem(newList.id, {
-              title: itemTitle.trim(),
-              severity: priorityToSeverity(formData.priority) // Use list priority as default for items
+              title: item.title.trim(),
+              severity: priorityToSeverity(item.priority) // Use list priority as default for items
             })
           )
 
@@ -279,16 +279,18 @@ export default function NewTodoListPage() {
     }))
   }
 
+
+
   const removeInitialItem = (index: number) => {
     setInitialItems(prev => prev.filter((_, i) => i !== index))
   }
 
-  const addInitialItem = () => {
-    setInitialItems(prev => [...prev, ''])
+  const updateInitialItem = (index: number, value: string) => {
+    setInitialItems(prev => prev.map((item, i) => i === index ? { ...item, title: value } : item))
   }
 
-  const updateInitialItem = (index: number, value: string) => {
-    setInitialItems(prev => prev.map((item, i) => i === index ? value : item))
+  const updateInitialItemPriority = (index: number, priority: 'low' | 'medium' | 'high') => {
+    setInitialItems(prev => prev.map((item, i) => i === index ? { ...item, priority } : item))
   }
 
   // Show loading while auth is being checked
@@ -343,11 +345,14 @@ export default function NewTodoListPage() {
               </p>
             </div>
 
+       
+
             {/* Templates */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 📋 Quick Start Templates
               </h2>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {templates.map((template) => {
                   const Icon = template.icon
@@ -444,7 +449,7 @@ export default function NewTodoListPage() {
             )}
 
             {/* Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -481,45 +486,98 @@ export default function NewTodoListPage() {
                       <label className="block text-sm font-medium text-gray-900 mb-2">
                         Category
                       </label>
-                      <select
-                        name="category"
+                      <CategoryDropdown
                         value={formData.category}
-                        onChange={handleInputChange}
-                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        {categoryOptions.map(category => (
-                          <option key={category.value} value={category.value}>
-                            {category.icon} {category.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(category) => setFormData({ ...formData, category })}
+                      />
                     </div>
 
                     {/* Priority */}
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Priority Level
+                        Priority
                       </label>
                       <div className="grid grid-cols-3 gap-2">
-                        {priorityOptions.map(priority => (
+                        {priorityOptions.map((priority) => (
                           <button
                             key={priority.value}
                             type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, priority: priority.value as 'low' | 'medium' | 'high' }))}
-                            className={`p-2 rounded-lg border-2 transition-all duration-200 ${
+                            onClick={() => setFormData({ ...formData, priority: priority.value as 'low' | 'medium' | 'high' })}
+                            className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                               formData.priority === priority.value
-                                ? 'border-purple-400 shadow-md'
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? `${priority.color} border-transparent shadow-lg font-semibold`
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                             }`}
                           >
-                            <div className={`text-xs p-1 rounded ${priority.color}`}>
-                              {priority.icon} {priority.label.split(' ')[0]}
-                            </div>
+                            <span>{priority.icon}</span>
+                            <span className="capitalize font-medium">{priority.value}</span>
                           </button>
                         ))}
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Initial Items Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-medium text-gray-900">
+                      Initial Items ({initialItems.length})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setInitialItems(prev => [...prev, { title: '', priority: 'medium' }])}
+                      className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      + Add Item
+                    </button>
+                  </div>
+                  
+                  {/* Quick Add Item */}
+                  <div className="flex items-center space-x-2 w-full">
+                    <input
+                      type="text"
+                      value={quickAddItem}
+                      onChange={(e) => setQuickAddItem(e.target.value)}
+                      onKeyDown={handleQuickAddItem}
+                      placeholder="Add a new item (press Enter to add)"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    <PriorityDropdown
+                      value={quickAddPriority}
+                      onChange={setQuickAddPriority}
+                      className="flex-shrink-0"
+                    />
+                  </div>
+
+                  {/* Items List */}
+                  {initialItems.length > 0 && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {initialItems.map((item, index) => (
+                        <div key={index} className="flex items-center space-x-2 w-full">
+                          <input
+                            type="text"
+                            value={item.title}
+                            onChange={(e) => updateInitialItem(index, e.target.value)}
+                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Enter task..."
+                          />
+                          <PriorityDropdown
+                            value={item.priority}
+                            onChange={(priority) => updateInitialItemPriority(index, priority)}
+                            className="flex-shrink-0"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeInitialItem(index)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Color Selection */}
@@ -581,42 +639,6 @@ export default function NewTodoListPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Initial Items */}
-                {initialItems.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-3">
-                      Initial Items ({initialItems.length})
-                    </label>
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {initialItems.map((item, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                                                <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => updateInitialItem(index, e.target.value)}
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="Enter task..."
-                      />
-                          <button
-                            type="button"
-                            onClick={() => removeInitialItem(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={addInitialItem}
-                        className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-colors"
-                      >
-                        + Add Another Item
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Preview */}
                 <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
