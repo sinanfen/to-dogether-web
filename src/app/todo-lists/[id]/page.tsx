@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { AppLayout } from '@/components/layout'
-import { Button, Input, PriorityDropdown } from '@/components/ui'
+import { Button, Input } from '@/components/ui'
 import { 
   PlusIcon, 
   CheckIcon, 
@@ -114,7 +114,7 @@ export default function TodoListDetailPage() {
       const list = await api.findTodoList(listId)
       
       if (!list) {
-        setError('Todo list not found')
+        setError('Yapılacaklar listesi bulunamadı')
         return
       }
       
@@ -153,7 +153,7 @@ export default function TodoListDetailPage() {
       setTodoList(enhancedList)
     } catch (err) {
       console.error('❌ Todo list loading error:', err)
-      setError('Failed to load todo list')
+      setError('Yapılacaklar listesi yüklenemedi')
     } finally {
       setLoading(false)
     }
@@ -180,7 +180,7 @@ export default function TodoListDetailPage() {
       setShowAddForm(false)
       await loadTodoList()
     } catch (err) {
-      setError('Failed to add item')
+      setError('Görev eklenemedi')
       console.error('Add item error:', err)
     } finally {
       setAddingItem(false)
@@ -214,7 +214,7 @@ export default function TodoListDetailPage() {
       
       setEditingItemId(null)
     } catch (err) {
-      setError('Failed to update item')
+      setError('Görev güncellenemedi')
       console.error('Edit item error:', err)
     } finally {
       setSavingItemId(null)
@@ -239,7 +239,7 @@ export default function TodoListDetailPage() {
         })
       }
     } catch (err) {
-      setError('Failed to toggle item')
+      setError('Görev durumu değiştirilemedi')
       console.error('Toggle item error:', err)
     } finally {
       setToggleingItemId(null)
@@ -259,7 +259,7 @@ export default function TodoListDetailPage() {
         })
       }
     } catch (err) {
-      setError('Failed to delete item')
+      setError('Görev silinemedi')
       console.error('Delete item error:', err)
     } finally {
       setDeletingItemId(null)
@@ -323,7 +323,7 @@ export default function TodoListDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -370,11 +370,11 @@ export default function TodoListDetailPage() {
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-500 hover:text-white"
               >
-                Retry
+                Tekrar Dene
               </Button>
               <Link href="/todo-lists">
                 <Button variant="outline">
-                  Back to Lists
+                  Listelere Dön
                 </Button>
               </Link>
             </div>
@@ -390,14 +390,14 @@ export default function TodoListDetailPage() {
         <div className="text-center py-12">
           <ListIcon className="w-16 h-16 text-gray-300 mx-auto mb-6" />
           <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            Todo List Not Found
+            Yapılacaklar Listesi Bulunamadı
           </h3>
           <p className="text-gray-600 mb-8">
-            The todo list you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to view it.
+            Aradığınız yapılacaklar listesi bulunamadı veya erişim iznine sahip değilsiniz.
           </p>
           <Link href="/todo-lists">
             <Button variant="gradient">
-              Back to Lists
+              Listelere Dön
             </Button>
           </Link>
         </div>
@@ -407,127 +407,91 @@ export default function TodoListDetailPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
-        <div className="relative overflow-hidden">
-          {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-3xl opacity-90"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent rounded-3xl"></div>
-          
-          {/* Content */}
-          <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 text-white shadow-2xl">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8">
-              <div className="flex-1 mb-6 lg:mb-0">
-                {/* Breadcrumb */}
-                <div className="flex items-center space-x-2 text-purple-100 text-sm mb-4">
-                  <Link href="/todo-lists" className="hover:text-white transition-colors">
-                    Todo Lists
-                  </Link>
-                  <span>/</span>
-                  <span className="text-white font-medium">Detail</span>
-                </div>
-
-                {/* Title */}
-                <h1 className="text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                  {todoList.title}
-                </h1>
-
-                {/* Description */}
-                {todoList.description && (
-                  <p className="text-lg text-purple-100 mb-6 max-w-2xl leading-relaxed">
-                    {todoList.description}
-                  </p>
-                )}
-
-                {/* Stats */}
-                <div className="flex flex-wrap items-center gap-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <ListIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-purple-100">Total Tasks</p>
-                      <p className="text-xl font-bold">{todoList.itemsCount || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <CheckIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-purple-100">Completed</p>
-                      <p className="text-xl font-bold">{todoList.completedItemsCount || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                      <TargetIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-purple-100">Progress</p>
-                      <p className="text-xl font-bold">{todoList.completionPercentage || 0}%</p>
-                    </div>
-                  </div>
-                </div>
+        <div
+          className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl shadow-xl text-white box-border overflow-x-hidden mobile-header-section px-6 md:px-12 py-7"
+        >
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 min-w-0">
+            {/* Sol: Breadcrumb, başlık, açıklama, emoji, istatistikler */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between">
+              <div className="flex items-center mb-3 pl-4">
+                <button
+                  onClick={() => router.back()}
+                  className="mr-3 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                  aria-label="Geri"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+                <span className="text-purple-100 text-xs sm:text-sm font-medium ml-2">
+                  Yapılacaklar Listesi <span className="mx-1">/</span> <span className="text-white">Detay</span>
+                </span>
               </div>
-
-              {/* Actions */}
-              <div className="flex items-center space-x-3 lg:ml-8">
-                {canEditItems() && (
-                  <Button 
-                    onClick={() => setShowAddForm(true)}
-                    className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
-                  >
-                    <PlusIcon className="w-4 h-4 mr-2" />
-                    Add Task
-                  </Button>
-                )}
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2 leading-tight break-words truncate w-full min-w-0 pl-4 drop-shadow-lg">
+                {todoList.title}
+              </h1>
+              {/* Emoji sırası */}
+              <div className="flex flex-wrap gap-1 mb-3 pl-4 text-2xl md:text-3xl">
                 
-                {canEditItems() && (
-                  <Link href={`/todo-lists/${listId}/edit`}>
-                    <Button 
-                      variant="outline"
-                      className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    >
-                      <EditIcon className="w-4 h-4 mr-2" />
-                      Edit List
-                    </Button>
-                  </Link>
-                )}
-
-                {isReadOnlyPartnerList() && (
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-500/20 backdrop-blur-sm border border-yellow-300/30 rounded-lg">
-                    <div className="w-2 h-2 bg-yellow-300 rounded-full" />
-                    <span className="text-sm text-yellow-100 font-medium">
-                      Read-only - Partner&apos;s private list
-                    </span>
+                
+              </div>
+              {todoList.description && (
+                <p className="text-base md:text-lg text-purple-100 mb-3 max-w-full leading-relaxed break-words w-full min-w-0 pl-4">
+                  {todoList.description}
+                </p>
+              )}
+              {/* İstatistikler */}
+              <div className="flex flex-row gap-4 mt-2 pl-4">
+                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
+                  <ListIcon className="w-5 h-5 text-white/90" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">Toplam Görev</span>
+                    <span className="text-lg font-bold text-white/90">{todoList.itemsCount || 0}</span>
                   </div>
-                )}
+                </div>
+                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
+                  <CheckIcon className="w-5 h-5 text-white/90" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">Tamamlandı</span>
+                    <span className="text-lg font-bold text-white/90">{todoList.completedItemsCount || 0}</span>
+                  </div>
+                </div>
+                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
+                  <TargetIcon className="w-5 h-5 text-white/90" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-white/80">İlerleme</span>
+                    <span className="text-lg font-bold text-white/90">{todoList.completionPercentage || 0}%</span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Progress Bar */}
-            <div className="relative">
-              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-white/80 to-white/60 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${todoList.completionPercentage || 0}%` }}
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-full"></div>
+            {/* Sağ: Sadece Listeyi Düzenle butonu */}
+            <div className="flex flex-row md:flex-col gap-2 md:gap-3 items-start md:items-end mt-2 md:mt-0 pr-2">
+              <Link href={`/todo-lists/${todoList.id}/edit`}>
+                <button className="flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors text-sm md:text-base gap-2 cursor-pointer">
+                  <EditIcon className="w-4 h-4" />
+                  Listeyi Düzenle
+                </button>
+              </Link>
             </div>
           </div>
+          {/* Progress Bar */}
+          <div className="w-full h-3 bg-white/20 rounded-full mt-7 overflow-hidden mx-4 md:mx-12">
+            <div
+              className="h-full bg-white/80 rounded-full transition-all duration-500"
+              style={{ width: `${todoList.completionPercentage || 0}%` }}
+            />
+          </div>
         </div>
-
         {/* Add New Item Form */}
         {showAddForm && (
-          <div className="relative group">
+          <div className="relative group w-full max-w-[98vw] mx-auto box-border">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl opacity-50"></div>
             <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Add New Task</h3>
+                <h3 className="text-xl font-semibold text-gray-900">Yeni Görev Ekle</h3>
                 <button
                   onClick={() => setShowAddForm(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -541,7 +505,7 @@ export default function TodoListDetailPage() {
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full" />
                     <span className="text-sm text-yellow-700 font-medium">
-                      You can only view this list. Only the owner can add tasks.
+                      Sadece bu listenin görüntülenmesine izin veriyorsunuz. Sadece sahibi görev ekleyebilir.
                     </span>
                   </div>
                 </div>
@@ -550,12 +514,12 @@ export default function TodoListDetailPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Task Title
+                    Görev Başlığı
                   </label>
                   <Input
                     value={newItemForm.title}
                     onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
-                    placeholder="Type task and press Enter..."
+                    placeholder="Görev girin ve Enter tuşuna basın..."
                     className="w-full text-lg"
                     onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
                     disabled={isReadOnlyPartnerList()}
@@ -565,7 +529,7 @@ export default function TodoListDetailPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Priority
+                    Öncelik
                   </label>
                   <div className="flex space-x-3">
                     {(['low', 'medium', 'high'] as const).map((priority) => (
@@ -592,7 +556,7 @@ export default function TodoListDetailPage() {
                     variant="outline"
                     className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+                    İptal Et
                   </Button>
                   <Button
                     onClick={handleAddItem}
@@ -602,12 +566,12 @@ export default function TodoListDetailPage() {
                     {addingItem ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                        <span>Adding...</span>
+                        <span>Ekleniyor...</span>
                       </>
                     ) : (
                       <>
                         <PlusIcon className="w-4 h-4 mr-2" />
-                        <span>Add Task</span>
+                        <span>Görev Ekle</span>
                       </>
                     )}
                   </Button>
@@ -616,29 +580,18 @@ export default function TodoListDetailPage() {
             </div>
           </div>
         )}
-
         {/* Todo Items */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Tasks ({todoList.items?.length || 0})
-            </h2>
+        <div className="space-y-2 md:space-y-3 w-full max-w-full min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0 w-full">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 min-w-0">Görevler ({todoList.items?.length || 0})</h2>
             
-            {!showAddForm && canEditItems() && (
-              <Button
-                onClick={() => setShowAddForm(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <PlusIcon className="w-4 h-4 mr-2" />
-                Add Task
-              </Button>
-            )}
+            {/* Removed "Görev Ekle" button */}
             
             {isReadOnlyPartnerList() && (
               <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full" />
                 <span className="text-sm text-yellow-700 font-medium">
-                  Read-only mode - This is your partner&apos;s private list
+                  Salt okunur mod - Bu, ortak listenizin bir ortağınızın özel listesidir
                 </span>
               </div>
             )}
@@ -646,106 +599,65 @@ export default function TodoListDetailPage() {
 
           {/* Quick Add Input - Always Visible */}
           {canEditItems() && !isReadOnlyPartnerList() && (
-            <div className="bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-xl p-3 shadow-lg">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                <input
-                  ref={quickAddInputRef}
-                  type="text"
-                  placeholder="Add a task..."
-                  className="flex-1 bg-transparent border border-gray-200 rounded-lg px-3 py-2 outline-none text-gray-900 placeholder-gray-500 text-sm focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
-                  autoFocus
-                  onKeyDown={async (e) => {
-                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                      e.preventDefault()
-                      const title = e.currentTarget.value.trim()
-                      
-                      try {
-                        setAddingItem(true)
-                        setError(null) // Clear previous errors
+            <div className="bg-white rounded-lg shadow-md p-4 w-full box-border">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 min-w-0 w-full">
+                <div className="flex items-center gap-2 min-w-0 w-full">
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
+                  <input
+                    ref={quickAddInputRef}
+                    type="text"
+                    placeholder="Görev ekle..."
+                    className="flex-1 min-w-0 max-w-full bg-transparent border border-gray-200 rounded-full px-4 py-2 outline-none text-gray-900 placeholder-gray-500 text-sm focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                    autoFocus
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                        e.preventDefault()
+                        const title = e.currentTarget.value.trim()
                         
-                        const itemData: CreateTodoItemRequest = {
-                          title,
-                          severity: priorityToSeverity('medium') // Default to medium priority
+                        try {
+                          setAddingItem(true)
+                          setError(null) // Clear previous errors
+                          
+                          const itemData: CreateTodoItemRequest = {
+                            title,
+                            severity: priorityToSeverity('medium') // Default to medium priority
+                          }
+                          
+                          console.log('Creating todo item:', itemData)
+                          const newItem = await api.createTodoItem(listId, itemData)
+                          
+                          // Update local state instead of reloading
+                          if (todoList) {
+                            setTodoList({
+                              ...todoList,
+                              items: [{
+                                ...newItem,
+                                isCompleted: false,
+                                priority: 'medium'
+                              }, ...(todoList.items || [])]
+                            })
+                          }
+                          
+                          if (quickAddInputRef.current) {
+                            quickAddInputRef.current.value = ''
+                            quickAddInputRef.current.focus()
+                          }
+                        } catch (err) {
+                          console.error('Quick add item error details:', err)
+                          const errorMessage = err instanceof Error ? err.message : 'Görev eklenemedi'
+                          setError(errorMessage)
+                        } finally {
+                          setAddingItem(false)
                         }
-                        
-                        console.log('Creating todo item:', itemData)
-                        const newItem = await api.createTodoItem(listId, itemData)
-                        
-                        // Update local state instead of reloading
-                        if (todoList) {
-                          setTodoList({
-                            ...todoList,
-                            items: [...(todoList.items || []), {
-                              ...newItem,
-                              isCompleted: false,
-                              priority: 'medium'
-                            }]
-                          })
-                        }
-                        
-                        if (quickAddInputRef.current) {
-                          quickAddInputRef.current.value = ''
-                          quickAddInputRef.current.focus()
-                        }
-                      } catch (err) {
-                        console.error('Quick add item error details:', err)
-                        const errorMessage = err instanceof Error ? err.message : 'Failed to add item'
-                        setError(errorMessage)
-                      } finally {
-                        setAddingItem(false)
                       }
-                    }
-                  }}
-                  disabled={addingItem}
-                  inputMode="text"
-                  autoComplete="off"
-                  autoCapitalize="sentences"
-                />
-                <PriorityDropdown
-                  value="medium"
-                  onChange={async (priority) => {
-                    if (quickAddInputRef.current && quickAddInputRef.current.value.trim()) {
-                      const title = quickAddInputRef.current.value.trim()
-                      
-                      try {
-                        setAddingItem(true)
-                        setError(null)
-                        
-                        const itemData: CreateTodoItemRequest = {
-                          title,
-                          severity: priorityToSeverity(priority)
-                        }
-                        
-                        const newItem = await api.createTodoItem(listId, itemData)
-                        
-                        // Update local state instead of reloading
-                        if (todoList) {
-                          setTodoList({
-                            ...todoList,
-                            items: [...(todoList.items || []), {
-                              ...newItem,
-                              isCompleted: false,
-                              priority
-                            }]
-                          })
-                        }
-                        
-                        quickAddInputRef.current.value = ''
-                        quickAddInputRef.current.focus()
-                      } catch (err) {
-                        console.error('Quick add item error details:', err)
-                        const errorMessage = err instanceof Error ? err.message : 'Failed to add item'
-                        setError(errorMessage)
-                      } finally {
-                        setAddingItem(false)
-                      }
-                    }
-                  }}
-                  disabled={addingItem}
-                  compact={false}
-                  className="flex-shrink-0 min-w-[120px]"
-                />
+                    }}
+                    disabled={addingItem}
+                    inputMode="text"
+                    autoComplete="off"
+                    autoCapitalize="sentences"
+                  />
+                </div>
+             
                 {addingItem && (
                   <div className="w-4 h-4 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin flex-shrink-0"></div>
                 )}
@@ -754,12 +666,12 @@ export default function TodoListDetailPage() {
           )}
 
           {todoList.items && todoList.items.length > 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
+            <div className="bg-white rounded-lg shadow-md p-4 w-full box-border">
               <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Task List</h3>
-                <p className="text-sm text-gray-600 mt-1">{todoList.items.length} task{todoList.items.length !== 1 ? 's' : ''}</p>
+                <h3 className="text-lg font-semibold text-gray-900">Görev Listesi</h3>
+                <p className="text-sm text-gray-600 mt-1">{todoList.items.length} görev{todoList.items.length !== 1 ? 'ler' : ''}</p>
               </div>
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[60vh] overflow-y-auto mobile-scroll">
                 <div className="p-4 space-y-3">
                   {todoList.items.map((item) => (
                     <div key={item.id} className="group relative">
@@ -775,7 +687,7 @@ export default function TodoListDetailPage() {
                               <Input
                                 value={editItemForm.title}
                                 onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
-                                placeholder="Task title..."
+                                placeholder="Görev başlığı..."
                                 className="w-full text-base font-medium"
                                 onKeyDown={(e) => e.key === 'Enter' && handleEditItem(item.id)}
                               />
@@ -806,7 +718,7 @@ export default function TodoListDetailPage() {
                                   size="sm"
                                   className="border-gray-300 text-gray-700 hover:bg-gray-50 text-xs px-3 py-1.5"
                                 >
-                                  Cancel
+                                  İptal Et
                                 </Button>
                                 <Button
                                   onClick={() => handleEditItem(item.id)}
@@ -817,10 +729,10 @@ export default function TodoListDetailPage() {
                                   {savingItemId === item.id ? (
                                     <>
                                       <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
-                                      <span>Saving...</span>
+                                      <span>Kaydediliyor...</span>
                                     </>
                                   ) : (
-                                    <span>Save</span>
+                                    <span>Kaydet</span>
                                   )}
                                 </Button>
                               </div>
@@ -887,7 +799,7 @@ export default function TodoListDetailPage() {
                                     <button
                                       onClick={() => startEdit(item)}
                                       className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 active:scale-95 touch-manipulation"
-                                      title="Edit task"
+                                      title="Görev düzenle"
                                     >
                                       <EditIcon className="w-3 h-3" />
                                     </button>
@@ -896,7 +808,7 @@ export default function TodoListDetailPage() {
                                       onClick={() => handleDeleteItem(item.id)}
                                       disabled={deletingItemId === item.id}
                                       className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 border border-transparent hover:border-red-200 disabled:opacity-50 active:scale-95 touch-manipulation"
-                                      title="Delete task"
+                                      title="Görev sil"
                                     >
                                       {deletingItemId === item.id ? (
                                         <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
@@ -924,10 +836,10 @@ export default function TodoListDetailPage() {
                 <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-3xl p-12">
                   <ListIcon className="w-20 h-20 text-gray-300 mx-auto mb-6" />
                   <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                    No Tasks Yet
+                    Henüz Görev Yok
                   </h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Start by adding your first task to this list. You can create tasks, set priorities, and track your progress.
+                    Bu listenize ilk görev ekleyin. Görevler, öncelikleri ve ilerlemeyi takip edebilirsiniz.
                   </p>
                   {canEditItems() ? (
                     <Button
@@ -935,11 +847,11 @@ export default function TodoListDetailPage() {
                       className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       <PlusIcon className="w-5 h-5 mr-2" />
-                      Add Your First Task
+                      İlk Görevinizi Ekle
                     </Button>
                   ) : (
                     <div className="text-sm text-gray-500">
-                      Only the owner can add tasks to this list
+                      Sadece sahibi bu listenin görevlerini ekleyebilir
                     </div>
                   )}
                 </div>

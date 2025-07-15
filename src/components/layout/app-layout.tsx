@@ -98,32 +98,30 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:ml-0">
-        {/* Mobile header */}
-        <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30 backdrop-blur-sm bg-white/95">
-          <div className="flex items-center justify-between">
+        {/* AppBar / Mobile header */}
+        <header className="lg:hidden sticky top-0 z-30 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 box-border overflow-x-hidden">
+          <div className="w-full max-w-screen-lg mx-auto px-4 py-3 flex items-center justify-between rounded-lg shadow-md">
             <button
               data-sidebar-toggle
               onClick={toggleSidebar}
-              className="p-3 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+              className="p-3 rounded-xl hover:bg-white/10 active:bg-white/20 transition-colors touch-manipulation"
               style={{ minWidth: '44px', minHeight: '44px' }}
               aria-label="Toggle navigation menu"
             >
-              <MenuIcon className="h-6 w-6 text-gray-600" />
+              <MenuIcon className="h-6 w-6 text-white" />
             </button>
-            
             <div className="flex items-center space-x-2">
-              <h1 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-lg font-semibold text-white drop-shadow-sm">
                 To-Dogether
               </h1>
               {user?.partner && (
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Partner connected" />
+                <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse" title="Partner connected" />
               )}
             </div>
-            
             {/* User avatar on mobile */}
             {user && (
               <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mr-2 border border-white/30"
                 style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
               >
                 {user.username.charAt(0).toUpperCase()}
@@ -131,27 +129,32 @@ export function AppLayout({ children }: AppLayoutProps) {
             )}
           </div>
         </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 lg:p-8">
-            <div className="mx-auto max-w-7xl">
-              {children}
+        {/* Masaüstü AppBar */}
+        <header className="hidden lg:flex items-center justify-between bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-30 backdrop-blur-sm bg-white/95">
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              To-Dogether
+            </h1>
+            {user?.partner && (
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Partner connected" />
+            )}
+          </div>
+          {/* User avatar on desktop */}
+          {user && (
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-semibold"
+              style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
+            >
+              {user.username.charAt(0).toUpperCase()}
             </div>
+          )}
+        </header>
+        {/* Page content */}
+        <main className="flex-1 overflow-auto flex flex-col items-center">
+          <div className="w-full max-w-screen-xl px-4 sm:px-6 md:px-8 py-6">
+            {children}
           </div>
         </main>
-
-        {/* Mobile bottom navigation hint */}
-        {isMobile && (
-          <div className="lg:hidden bg-white border-t border-gray-200 px-4 py-2">
-            <div className="flex items-center justify-center">
-              <div className="w-12 h-1 bg-gray-300 rounded-full" />
-            </div>
-            <p className="text-xs text-gray-500 text-center mt-1">
-              Swipe right from edge to open menu
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )

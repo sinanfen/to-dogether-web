@@ -14,10 +14,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://to-dogether.vercel.app'),
-  title: "To-Dogether - Collaborative Todo Lists",
-  description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
-  keywords: ["todo", "collaborative", "couples", "task management", "productivity", "pwa", "progressive web app"],
-  authors: [{ name: "To-Dogether Team" }],
+  title: "To-Dogether - Çiftler için Ortak Yapılacaklar Listesi",
+  description: "Birlikte planlayın, birlikte başarın. Çiftler için görevlerinizi organize edin, hedefler koyun ve ilerlemenizi takip edin.",
+  keywords: ["yapılacaklar", "ortak", "çiftler", "görev yönetimi", "verimlilik", "pwa", "progresif web uygulaması"],
+  authors: [{ name: "To-Dogether Ekibi" }],
   creator: "To-Dogether",
   publisher: "To-Dogether",
   formatDetection: {
@@ -52,21 +52,21 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "To-Dogether",
-    title: "To-Dogether - Collaborative Todo Lists",
-    description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
+    title: "To-Dogether - Çiftler için Ortak Yapılacaklar Listesi",
+    description: "Birlikte planlayın, birlikte başarın. Çiftler için görevlerinizi organize edin, hedefler koyun ve ilerlemenizi takip edin.",
     images: [
       {
         url: "/icons/icon-512.png",
         width: 512,
         height: 512,
-        alt: "To-Dogether App Icon",
+        alt: "To-Dogether Uygulama İkonu",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "To-Dogether - Collaborative Todo Lists",
-    description: "Plan together, achieve together. The perfect todo list app for couples to organize tasks, set goals, and track progress as a team.",
+    title: "To-Dogether - Çiftler için Ortak Yapılacaklar Listesi",
+    description: "Birlikte planlayın, birlikte başarın. Çiftler için görevlerinizi organize edin, hedefler koyun ve ilerlemenizi takip edin.",
     images: ["/icons/icon-512.png"],
   },
   robots: {
@@ -96,8 +96,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#8B5CF6" },
     { media: "(prefers-color-scheme: dark)", color: "#7C3AED" },
@@ -112,14 +112,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="tr" className={inter.variable}>
       <head>
         {/* PWA Meta Tags */}
         <meta name="application-name" content="To-Dogether" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="To-Dogether" />
-        <meta name="description" content="Plan together, achieve together. The perfect todo list app for couples." />
+        <meta name="description" content="Birlikte planlayın, birlikte başarın. Çiftler için yapılacaklar uygulaması." />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#8B5CF6" />
@@ -140,7 +140,17 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
         
         {/* Prevent zoom on input focus */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        
+        {/* Mobile optimizations */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="To-Dogether" />
+        <meta name="msapplication-TileColor" content="#8B5CF6" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="theme-color" content="#8B5CF6" />
+        <meta name="format-detection" content="telephone=no" />
       </head>
       <body className="min-h-screen bg-gray-50 font-sans antialiased overflow-x-hidden" suppressHydrationWarning={true}>
         <AuthProvider>

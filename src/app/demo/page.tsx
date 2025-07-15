@@ -7,11 +7,11 @@ import { HeartIcon, UsersIcon, CheckIcon } from '@/components/ui/icons'
 
 export default function DemoPage() {
   const [todos, setTodos] = useState([
-    { id: 1, text: 'Plan our weekend getaway', completed: false, priority: 'high', assignedTo: 'both' },
-    { id: 2, text: 'Buy groceries for dinner', completed: true, priority: 'medium', assignedTo: 'you' },
-    { id: 3, text: 'Book restaurant for anniversary', completed: false, priority: 'high', assignedTo: 'partner' },
-    { id: 4, text: 'Clean the living room', completed: false, priority: 'low', assignedTo: 'you' },
-    { id: 5, text: 'Watch movie together', completed: true, priority: 'medium', assignedTo: 'both' },
+    { id: 1, text: 'Hafta sonu kaçamağımızı planla', completed: false, priority: 'high', assignedTo: 'both' },
+    { id: 2, text: 'Akşam yemeği için market alışverişi yap', completed: true, priority: 'medium', assignedTo: 'you' },
+    { id: 3, text: 'Yıldönümü için restoran rezervasyonu yap', completed: false, priority: 'high', assignedTo: 'partner' },
+    { id: 4, text: 'Oturma odasını temizle', completed: false, priority: 'low', assignedTo: 'you' },
+    { id: 5, text: 'Birlikte film izle', completed: true, priority: 'medium', assignedTo: 'both' },
   ])
 
   const toggleTodo = (id: number) => {
@@ -38,6 +38,24 @@ export default function DemoPage() {
     }
   }
 
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'yüksek'
+      case 'medium': return 'orta'
+      case 'low': return 'düşük'
+      default: return priority
+    }
+  }
+
+  const getAssignedText = (assignedTo: string) => {
+    switch (assignedTo) {
+      case 'you': return 'sen'
+      case 'partner': return 'partner'
+      case 'both': return 'ikimiz'
+      default: return assignedTo
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
@@ -47,7 +65,7 @@ export default function DemoPage() {
             href="/" 
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mb-6 cursor-pointer hover:bg-gray-50"
           >
-            ← Back to Home
+            ← Ana Sayfaya Dön
           </Link>
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
@@ -58,8 +76,8 @@ export default function DemoPage() {
             </h1>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Experience how couples can plan together with our interactive demo. 
-            Try checking off tasks and see the real-time collaboration in action!
+            Çiftlerin nasıl birlikte plan yapabileceğini interaktif demomuzla deneyimleyin. 
+            Görevleri işaretlemeyi deneyin ve gerçek zamanlı işbirliğini canlı olarak görün!
           </p>
         </div>
 
@@ -69,10 +87,10 @@ export default function DemoPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Our Weekend Plans</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Hafta Sonu Planlarımız</h2>
                 <div className="flex items-center space-x-2">
                   <UsersIcon className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm text-gray-600">Shared List</span>
+                  <span className="text-sm text-gray-600">Paylaşılan Liste</span>
                 </div>
               </div>
               
@@ -107,10 +125,10 @@ export default function DemoPage() {
                     
                     <div className="flex items-center space-x-2">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(todo.priority)}`}>
-                        {todo.priority}
+                        {getPriorityText(todo.priority)}
                       </span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAssignedColor(todo.assignedTo)}`}>
-                        {todo.assignedTo}
+                        {getAssignedText(todo.assignedTo)}
                       </span>
                     </div>
                   </div>
@@ -122,15 +140,15 @@ export default function DemoPage() {
           {/* Partner Overview */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Partner Overview</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Partner Genel Bakış</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">You</span>
+                    <span className="text-white font-semibold text-sm">Sen</span>
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Alex</p>
-                    <p className="text-sm text-gray-600">2 tasks completed today</p>
+                    <p className="text-sm text-gray-600">Bugün 2 görev tamamlandı</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -139,29 +157,29 @@ export default function DemoPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Jordan</p>
-                    <p className="text-sm text-gray-600">1 task completed today</p>
+                    <p className="text-sm text-gray-600">Bugün 1 görev tamamlandı</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Hızlı İstatistikler</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Completed Today</span>
+                  <span className="text-gray-600">Bugün Tamamlanan</span>
                   <span className="font-semibold text-green-600">
                     {todos.filter(t => t.completed).length}/{todos.length}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">High Priority</span>
+                  <span className="text-gray-600">Yüksek Öncelik</span>
                   <span className="font-semibold text-red-600">
                     {todos.filter(t => t.priority === 'high' && !t.completed).length}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Shared Tasks</span>
+                  <span className="text-gray-600">Paylaşılan Görevler</span>
                   <span className="font-semibold text-purple-600">
                     {todos.filter(t => t.assignedTo === 'both').length}
                   </span>
@@ -174,16 +192,16 @@ export default function DemoPage() {
         {/* Call to Action */}
         <div className="mt-12 text-center bg-white rounded-2xl shadow-lg p-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Ready to Start Planning Together?
+            Birlikte Planlamaya Hazır mısınız?
           </h3>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of couples who are already planning their lives together with To-Dogether.
-            Create your account and start collaborating today!
+            To-Dogether ile hayatlarını birlikte planlayan binlerce çiftin arasına katılın.
+            Hesabınızı oluşturun ve bugün işbirliği yapmaya başlayın!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/auth/register">
               <Button variant="gradient" size="lg" className="px-8 py-3">
-                Sign Up Now
+                Şimdi Kayıt Ol
               </Button>
             </Link>
           </div>

@@ -9,18 +9,18 @@ interface ColorPickerProps {
 }
 
 const predefinedColors = [
-  { name: 'Purple', value: '#8B5CF6' },
-  { name: 'Pink', value: '#EC4899' },
-  { name: 'Blue', value: '#3B82F6' },
-  { name: 'Green', value: '#10B981' },
-  { name: 'Red', value: '#EF4444' },
-  { name: 'Orange', value: '#F59E0B' },
-  { name: 'Indigo', value: '#6366F1' },
-  { name: 'Emerald', value: '#059669' },
-  { name: 'Rose', value: '#F43F5E' },
-  { name: 'Cyan', value: '#06B6D4' },
-  { name: 'Violet', value: '#7C3AED' },
-  { name: 'Amber', value: '#D97706' },
+  { name: 'Mor', value: '#8B5CF6' },
+  { name: 'Pembe', value: '#EC4899' },
+  { name: 'Mavi', value: '#3B82F6' },
+  { name: 'Yeşil', value: '#10B981' },
+  { name: 'Kırmızı', value: '#EF4444' },
+  { name: 'Turuncu', value: '#F59E0B' },
+  { name: 'İndigo', value: '#6366F1' },
+  { name: 'Zümrüt', value: '#059669' },
+  { name: 'Gül', value: '#F43F5E' },
+  { name: 'Turkuaz', value: '#06B6D4' },
+  { name: 'Menekşe', value: '#7C3AED' },
+  { name: 'Kehribar', value: '#D97706' },
 ]
 
 // Hex validation function
@@ -69,7 +69,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
         onChange(normalizedHex)
         setHexError(null)
       } else {
-        setHexError('Invalid hex color code')
+        setHexError('Geçersiz hex renk kodu')
       }
     }
   }
@@ -77,7 +77,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
   const handleHexInputBlur = () => {
     // Final validation on blur
     if (hexInput && !isValidHex(hexInput)) {
-      setHexError('Please enter a valid hex color (e.g., #FF0000)')
+      setHexError('Lütfen geçerli bir hex renk kodu girin (örn: #FF0000)')
       setHexInput(value) // Reset to current valid value
     }
   }
@@ -97,14 +97,14 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
           style={{ backgroundColor: value }}
         />
         <div>
-          <p className="text-sm font-semibold text-gray-900">Selected Color</p>
+          <p className="text-sm font-semibold text-gray-900">Seçilen Renk</p>
           <p className="text-xs text-gray-500 font-mono">{value}</p>
         </div>
       </div>
 
       {/* Predefined Colors Grid */}
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-4">Popular Colors</p>
+        <p className="text-sm font-medium text-gray-700 mb-4">Popüler Renkler</p>
         <div className="grid grid-cols-6 gap-3">
           {predefinedColors.map((color) => (
             <button
@@ -149,7 +149,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
           >
             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
           </svg>
-          <span>Custom Color</span>
+          <span>Özel Renk</span>
         </button>
         
         <div className={clsx(
@@ -165,8 +165,8 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                   style={{ backgroundColor: customColor }}
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700 mb-1">Preview</p>
-                  <p className="text-xs text-gray-500">Live preview of your custom color</p>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Önizleme</p>
+                  <p className="text-xs text-gray-500">Özel renginizin canlı önizlemesi</p>
                 </div>
               </div>
 
@@ -175,7 +175,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                 {/* Native Color Picker */}
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Color Picker
+                    Renk Seçici
                   </label>
                   <input
                     type="color"
@@ -188,7 +188,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                 {/* Hex Input */}
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Hex Code
+                    Hex Kodu
                   </label>
                   <div className="relative">
                     <input
@@ -207,7 +207,9 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                     />
                     {hexError && (
                       <div className="absolute -bottom-6 left-0 text-xs text-red-600 animate-fade-in">
-                        {hexError}
+                        {hexError === 'Invalid hex color code' ? 'Geçersiz hex renk kodu' : 
+                         hexError === 'Please enter a valid hex color (e.g., #FF0000)' ? 'Lütfen geçerli bir hex renk kodu girin (örn: #FF0000)' : 
+                         hexError}
                       </div>
                     )}
                   </div>
@@ -227,7 +229,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                   disabled={!!hexError || !isValidHex(customColor)}
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
                 >
-                  Apply Custom Color
+                  Özel Rengi Uygula
                 </button>
               </div>
             </div>

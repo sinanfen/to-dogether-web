@@ -125,7 +125,7 @@ export default function TodoListsPage() {
           
           setPartnerLists(enhancedPartnerLists)
         } catch (partnerError) {
-          console.error('❌ Failed to load partner lists:', partnerError)
+          console.error('❌ Partner listeleri yüklenemedi:', partnerError)
           // Don't throw error for partner lists, just log it
           setPartnerLists([])
         }
@@ -133,8 +133,8 @@ export default function TodoListsPage() {
         setPartnerLists([])
       }
     } catch (err) {
-      console.error('❌ Todo lists loading error:', err)
-      setError('Failed to load todo lists')
+      console.error('❌ Todo listeleri yükleme hatası:', err)
+      setError('Yapılacaklar listeleri yüklenemedi')
     } finally {
       setLoading(false)
     }
@@ -159,8 +159,8 @@ export default function TodoListsPage() {
       closeDeleteDialog()
       await loadTodoLists()
     } catch (err) {
-      setError('Failed to delete todo list')
-      console.error('Delete list error:', err)
+      setError('Yapılacaklar listesi silinemedi')
+      console.error('Liste silme hatası:', err)
     } finally {
       setDeletingListId(null)
     }
@@ -176,7 +176,7 @@ export default function TodoListsPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -193,9 +193,9 @@ export default function TodoListsPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Todo Lists</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Yapılacaklar Listeleri</h1>
             <p className="text-gray-600 mt-2">
-              Organize your tasks and collaborate with your partner
+              Görevlerinizi organize edin ve partnerinizle iş birliği yapın
             </p>
           </div>
           
@@ -213,8 +213,8 @@ export default function TodoListsPage() {
               <Link href="/todo-lists/new">
                 <Button 
                   variant="gradient" 
-                  size="lg" 
-                  className="relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-400 hover:via-pink-400 hover:to-red-400"
+                  size="sm" 
+                  className="w-full px-3 py-1.5 h-10 relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-400 hover:via-pink-400 hover:to-red-400"
                 >
                   {/* Inner Background */}
                   <div className="absolute inset-[1px] bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg group-hover:from-purple-400 group-hover:via-pink-400 group-hover:to-red-400 transition-all duration-500"></div>
@@ -228,7 +228,7 @@ export default function TodoListsPage() {
                         <PlusIcon className="h-5 w-5 text-white/60 scale-150 animate-ping" />
                       </div>
                     </div>
-                    <span className="font-semibold tracking-wide">Create New List</span>
+                    <span className="font-semibold tracking-wide">Yeni Liste Oluştur</span>
                     
                     {/* Magic sparkle */}
                     <div className="w-1.5 h-1.5 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping"></div>
@@ -260,7 +260,7 @@ export default function TodoListsPage() {
               size="sm"
               className="mt-2"
             >
-              Retry
+              Tekrar Dene
             </Button>
           </div>
         )}
@@ -270,18 +270,18 @@ export default function TodoListsPage() {
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
             <button
               onClick={() => setActiveTab('my')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
                 activeTab === 'my'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <ListIcon className="h-4 w-4" />
-              <span>My Lists ({myLists.length})</span>
+              <span>Benim Listelerim ({myLists.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('partner')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
                 activeTab === 'partner'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
@@ -290,7 +290,7 @@ export default function TodoListsPage() {
             >
               <UsersIcon className="h-4 w-4" />
               <span>
-                {user.partner ? `Partner Lists (${partnerLists.length})` : 'No Partner'}
+                {user.partner ? `Partner Listeleri (${partnerLists.length})` : 'Partner Yok'}
               </span>
             </button>
           </div>
@@ -351,7 +351,7 @@ export default function TodoListsPage() {
                       
                       <div className="flex items-center space-x-1">
                         {/* Privacy Status Icon */}
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" title={list.isShared ? "Public - Shared with you" : "Private - Partner's private list"}>
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" title={list.isShared ? "Genel - Paylaşıldı" : "Özel - Partner'in özel listesi"}>
                           {list.isShared ? (
                             <EyeIcon className="h-4 w-4 text-green-600" />
                           ) : (
@@ -396,7 +396,7 @@ export default function TodoListsPage() {
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-600">
-                          {list.completedItemsCount || 0} of {list.itemsCount || 0} completed
+                          {list.completedItemsCount || 0} of {list.itemsCount || 0} tamamlandı
                         </span>
                         <span className="text-xs font-medium text-gray-900">
                           {list.completionPercentage || 0}%
@@ -439,14 +439,14 @@ export default function TodoListsPage() {
                     {/* Footer */}
                     <div className="flex items-center justify-between">
                       <div className="text-xs text-gray-500">
-                        <p>Created {new Date(list.createdAt).toLocaleDateString()}</p>
+                        <p>Oluşturulma: {new Date(list.createdAt).toLocaleDateString()}</p>
                         {list.lastActivity && (
-                          <p>Last activity {new Date(list.lastActivity).toLocaleDateString()}</p>
+                          <p>Son aktivite: {new Date(list.lastActivity).toLocaleDateString()}</p>
                         )}
                       </div>
                       
                       <Link href={`/todo-lists/${list.id}`}>
-                        <div className="relative opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="relative opacity-100 translate-y-0 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-all sm:duration-300 sm:transform sm:translate-y-2 sm:group-hover:translate-y-0">
                           <button
                             className="relative group/btn text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden cursor-pointer"
                             style={{
@@ -465,7 +465,7 @@ export default function TodoListsPage() {
                             
                             {/* Content */}
                             <div className="relative z-10 flex items-center space-x-2">
-                              <span className="text-sm">View Details</span>
+                              <span className="text-sm">Detayları Görüntüle</span>
                               <svg 
                                 className="w-4 h-4 transition-all duration-300 group-hover/btn:translate-x-1 group-hover/btn:scale-110" 
                                 fill="none" 
@@ -516,15 +516,15 @@ export default function TodoListsPage() {
                 <>
                   <ListIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                    No Todo Lists Yet
+                    Henüz Yapılacaklar Listesi Yok
                   </h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Create your first todo list to start organizing your tasks and planning with your partner.
+                    Görevlerinizi organize etmek için ilk yapılacaklar listesini oluşturun.
                   </p>
                   <Link href="/todo-lists/new">
                     <Button variant="gradient" size="lg">
                       <PlusIcon className="h-5 w-5 mr-2" />
-                      Create Your First List
+                      İlk Yapılacaklar Listesi Oluştur
                     </Button>
                   </Link>
                 </>
@@ -532,14 +532,14 @@ export default function TodoListsPage() {
                 <>
                   <UsersIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                    No Partner Lists Yet
+                    Partner Listeleri Yok
                   </h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Your partner hasn&apos;t created any todo lists yet, or they haven&apos;t shared any lists with you.
+                    Partneriniz henüz yapılacaklar listesi oluşturmadı veya size liste paylaşmadı.
                   </p>
                   <Link href="/partner">
                     <Button variant="outline">
-                      View Partner Overview
+                      Partner Genel Bakışına Git
                     </Button>
                   </Link>
                 </>
@@ -547,14 +547,14 @@ export default function TodoListsPage() {
                 <>
                   <UsersIcon className="h-16 w-16 text-gray-300 mx-auto mb-6" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                    Connect with Your Partner
+                    Partnerle İletişime Geçin
                   </h3>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Connect with your partner to see their todo lists and collaborate on shared tasks.
+                    Partnerinizle iletişime geçin ve onların yapılacaklar listelerini görüntüleyin.
                   </p>
                   <Link href="/profile">
                     <Button variant="gradient">
-                      Connect Partner
+                      Partnerle İletişime Geç
                     </Button>
                   </Link>
                 </>
@@ -570,7 +570,7 @@ export default function TodoListsPage() {
               <p className="text-3xl font-bold text-purple-600">
                 {myLists.length + partnerLists.length}
               </p>
-              <p className="text-gray-600 font-medium">Total Lists</p>
+              <p className="text-gray-600 font-medium">Toplam Liste</p>
             </div>
           </div>
           
@@ -580,7 +580,7 @@ export default function TodoListsPage() {
                 {myLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0) + 
                  partnerLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0)}
               </p>
-              <p className="text-gray-600 font-medium">Completed Tasks</p>
+              <p className="text-gray-600 font-medium">Tamamlanan Görevler</p>
             </div>
           </div>
           
@@ -590,7 +590,7 @@ export default function TodoListsPage() {
                 {myLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0) + 
                  partnerLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0)}
               </p>
-              <p className="text-gray-600 font-medium">Pending Tasks</p>
+              <p className="text-gray-600 font-medium">Devam Eden Görevler</p>
             </div>
           </div>
         </div>
@@ -612,25 +612,25 @@ export default function TodoListsPage() {
                   <TrashIcon className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Delete Todo List</h3>
-                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Yapılacaklar Listesi Sil</h3>
+                  <p className="text-sm text-gray-500">Bu işlem geri alınamaz</p>
                 </div>
               </div>
 
               {/* Content */}
               <div className="mb-6">
                 <p className="text-gray-700 mb-3">
-                  Are you sure you want to delete <span className="font-semibold text-gray-900">&ldquo;{deleteDialog.list.title}&rdquo;</span>?
+                  <span className="font-semibold text-gray-900">&ldquo;{deleteDialog.list.title}&rdquo;</span> adlı yapılacaklar listesini silmek istediğinize emin misiniz?
                 </p>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <div className="flex items-start space-x-2">
                     <div className="w-4 h-4 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
                     <div className="text-sm text-red-700">
-                      <p className="font-medium mb-1">This will permanently delete:</p>
+                      <p className="font-medium mb-1">Bu işlem şunları siler:</p>
                       <ul className="text-xs space-y-1">
-                        <li>• The todo list and its description</li>
-                        <li>• All {deleteDialog.list.itemsCount || 0} todo items in this list</li>
-                        <li>• All associated data and progress</li>
+                        <li>• Yapılacaklar listesi ve açıklaması</li>
+                        <li>• Bu listedeki tüm {deleteDialog.list.itemsCount || 0} görev</li>
+                        <li>• İlgili tüm veriler ve ilerleme</li>
                       </ul>
                     </div>
                   </div>
@@ -645,7 +645,7 @@ export default function TodoListsPage() {
                   className="px-4 py-2"
                   disabled={deletingListId === deleteDialog.list.id}
                 >
-                  Cancel
+                  İptal Et
                 </Button>
                 <Button
                   onClick={handleDeleteList}
@@ -655,10 +655,10 @@ export default function TodoListsPage() {
                   {deletingListId === deleteDialog.list.id ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-red-200 border-t-red-400 rounded-full animate-spin" />
-                      <span>Deleting...</span>
+                      <span>Siliniyor...</span>
                     </div>
                   ) : (
-                    'Delete List'
+                    'Listeyi Sil'
                   )}
                 </Button>
               </div>

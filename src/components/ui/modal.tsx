@@ -47,7 +47,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer flex items-center justify-center"
-            aria-label="Close modal"
+            aria-label="Modalı kapat"
           >
             <XMarkIcon className="h-5 w-5 text-gray-500" />
           </button>

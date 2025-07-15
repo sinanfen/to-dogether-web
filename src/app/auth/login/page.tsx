@@ -54,28 +54,28 @@ export default function LoginPage() {
               To-Dogether
             </h1>
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <h2 className="text-3xl font-bold text-gray-900">Tekrar Hoş Geldiniz</h2>
+          <p className="mt-2 text-gray-600">Hesabınıza giriş yapın</p>
         </div>
 
         <form className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-lg" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Username"
+              label="Kullanıcı Adı"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder="Kullanıcı adınızı girin"
               required
               autoComplete="username"
               className="transition-all duration-300 focus:scale-105"
             />
             <Input
-              label="Password"
+              label="Şifre"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="Şifrenizi girin"
               required
               showPasswordToggle={true}
               autoComplete="current-password"
@@ -98,16 +98,16 @@ export default function LoginPage() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                'Sign in'
+                'Giriş Yap'
               )}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
+              Hesabınız yok mu?{' '}
               <Link href="/auth/register" className="font-semibold text-purple-600 hover:text-purple-500 transition-colors">
-                Register here
+                Buradan kayıt olun
               </Link>
             </p>
           </div>

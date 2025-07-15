@@ -35,7 +35,7 @@ export function LoadingPage() {
     <div className="flex h-screen items-center justify-center bg-gray-50">
       <div className="text-center">
         <Loading size="lg" />
-        <p className="mt-4 text-sm text-gray-600">Loading...</p>
+        <p className="mt-4 text-sm text-gray-600">Yükleniyor...</p>
       </div>
     </div>
   )

@@ -44,7 +44,7 @@ export default function PartnerOverviewPage() {
             setInviteToken(response.inviteToken)
           } catch (err) {
             console.error('Failed to get invite token:', err)
-            setError('Failed to get invite token')
+            setError('Davet kodu alınamadı')
           } finally {
             setInviteTokenLoading(false)
           }
@@ -141,7 +141,7 @@ export default function PartnerOverviewPage() {
         console.error('❌ Failed to load partner data:', err)
         // Don't set error if user just doesn't have a partner
         if (user.partner) {
-          setError('Failed to load partner information')
+          setError('Partner bilgileri yüklenemedi')
         }
       } finally {
         setLoading(false)
@@ -175,7 +175,7 @@ export default function PartnerOverviewPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -225,22 +225,22 @@ export default function PartnerOverviewPage() {
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
               <HeartIcon className="h-12 w-12 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Invite Your Partner</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Partnerinizi Davet Edin</h1>
             <p className="text-gray-600 text-lg">
-              You need to invite your partner to start planning together. Share your invite code with them!
+              Birlikte planlamaya başlamak için partnerinizi davet etmeniz gerekiyor. Davet kodunuzu onlarla paylaşın!
             </p>
           </div>
 
           {/* Invite Section */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
-              Your Invite Code
+              Davet Kodunuz
             </h2>
 
             {inviteTokenLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
-                <span className="ml-3 text-gray-600">Loading invite code...</span>
+                <span className="ml-3 text-gray-600">Davet kodu yükleniyor...</span>
               </div>
             ) : error ? (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
@@ -248,56 +248,55 @@ export default function PartnerOverviewPage() {
               </div>
             ) : inviteToken ? (
             <div className="space-y-4">
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
-                  <p className="text-sm text-purple-700 mb-3 font-medium text-center">
-                    Share this code with your partner:
-                  </p>
-                  <div className="flex items-center space-x-3">
-                    <code className="flex-1 bg-white px-4 py-3 rounded-lg border border-purple-300 text-purple-800 font-mono text-lg text-center break-all">
-                      {inviteToken}
-                    </code>
-              <Button
-                      onClick={copyInviteToken}
-                      variant="outline"
-                      className="flex-shrink-0 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white"
-              >
-                      <ClipboardIcon className="h-4 w-4 mr-1 text-current" />
-                      {tokenCopied ? 'Copied!' : 'Copy'}
-              </Button>
-                  </div>
-            </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">📱 How to share:</h3>
-                  <ol className="text-sm text-blue-700 space-y-1">
-                    <li>1. Copy the code above</li>
-                    <li>2. Send it to your partner</li>
-                                         <li>3. They&apos;ll use it during registration</li>
-                  </ol>
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                <p className="text-sm text-purple-700 mb-3 font-medium text-center">
+                  Bu kodu partnerinizle paylaşın:
+                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <code className="flex-1 bg-white px-4 py-3 rounded-lg border border-purple-300 text-purple-800 font-mono text-lg text-center break-all">
+                    {inviteToken}
+                  </code>
+                  <Button
+                    onClick={copyInviteToken}
+                    variant="outline"
+                    className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white w-full sm:w-auto"
+                  >
+                    <ClipboardIcon className="h-4 w-4 mr-1 text-current" />
+                    {tokenCopied ? 'Kopyalandı!' : 'Kopyala'}
+                  </Button>
                 </div>
               </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">📱 Nasıl paylaşılır:</h3>
+                <ol className="text-sm text-blue-700 space-y-1">
+                  <li>1. Yukarıdaki kodu kopyalayın</li>
+                  <li>2. Partnerinize gönderin</li>
+                  <li>3. Kayıt sırasında kullanacaklar</li>
+                </ol>
+              </div>
+            </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600">Unable to load invite code</p>
+                <p className="text-gray-600">Davet kodu yüklenemedi</p>
             </div>
             )}
           </div>
 
           {/* Instructions */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Getting Started</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">Başlangıç</h3>
             <div className="space-y-3 text-blue-800">
               <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</div>
-                <p>Share your invite code with your partner</p>
+                <p>Davet kodunuzu partnerinizle paylaşın</p>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</div>
-                                 <p>They&apos;ll register using your code</p>
+                                 <p>Kodunuzu kullanarak kayıt olacaklar</p>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</div>
-                <p>Start planning together!</p>
+                <p>Birlikte planlamaya başlayın!</p>
             </div>
             </div>
           </div>
@@ -322,7 +321,7 @@ export default function PartnerOverviewPage() {
               <div>
               <h1 className="text-3xl font-bold mb-2">{partnerData?.username || 'Partner'}</h1>
               <p className="text-white/80 text-lg">
-                Connected since {partnerData?.createdAt ? new Date(partnerData.createdAt).toLocaleDateString() : 'Unknown'}
+                {partnerData?.createdAt ? `${new Date(partnerData.createdAt).toLocaleDateString('tr-TR')} tarihinden beri bağlı` : 'Bilinmeyen tarihten beri bağlı'}
                   </p>
             </div>
           </div>
@@ -340,7 +339,7 @@ export default function PartnerOverviewPage() {
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Lists</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Liste</p>
                 <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.totalLists || 0}</p>
               </div>
               <ListIcon className="h-8 w-8 text-purple-500" />
@@ -350,7 +349,7 @@ export default function PartnerOverviewPage() {
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Tasks</p>
+                <p className="text-sm font-medium text-gray-600">Toplam Görev</p>
                 <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.totalItems || 0}</p>
               </div>
               <CheckIcon className="h-8 w-8 text-green-500" />
@@ -360,7 +359,7 @@ export default function PartnerOverviewPage() {
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-sm font-medium text-gray-600">Tamamlanan</p>
                 <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.completedItems || 0}</p>
               </div>
               <TargetIcon className="h-8 w-8 text-blue-500" />
@@ -370,7 +369,7 @@ export default function PartnerOverviewPage() {
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Progress</p>
+                <p className="text-sm font-medium text-gray-600">İlerleme</p>
                 <p className="text-2xl font-bold text-gray-900">{partnerData?.stats?.completionRate || 0}%</p>
               </div>
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
@@ -382,11 +381,11 @@ export default function PartnerOverviewPage() {
 
         {/* Progress Overview */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Progress Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">İlerleme Genel Bakış</h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-700">Overall Completion</span>
+              <span className="text-gray-700">Genel Tamamlanma</span>
               <span className="text-gray-900 font-semibold">{partnerData?.stats?.completionRate || 0}%</span>
             </div>
             
@@ -399,11 +398,11 @@ export default function PartnerOverviewPage() {
             
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="text-center">
-                <p className="text-gray-600">Completed Tasks</p>
+                <p className="text-gray-600">Tamamlanan Görevler</p>
                 <p className="text-lg font-semibold text-green-600">{partnerData?.stats?.completedItems || 0}</p>
               </div>
               <div className="text-center">
-                <p className="text-gray-600">Pending Tasks</p>
+                <p className="text-gray-600">Bekleyen Görevler</p>
                 <p className="text-lg font-semibold text-orange-600">{partnerData?.stats?.pendingTasks || 0}</p>
               </div>
             </div>
@@ -413,10 +412,10 @@ export default function PartnerOverviewPage() {
         {/* Recent Todo Lists */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Todo Lists</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Son Yapılacaklar Listeleri</h2>
               <Link href="/todo-lists">
               <Button variant="outline" size="sm">
-                View All Lists
+                Tüm Listeleri Görüntüle
                 </Button>
               </Link>
             </div>
@@ -434,13 +433,13 @@ export default function PartnerOverviewPage() {
                       <div>
                         <h3 className="font-medium text-gray-900">{list.title}</h3>
                         <p className="text-sm text-gray-600">
-                          {list.items?.length || 0} items • Updated {new Date(list.updatedAt).toLocaleDateString()}
+                          {list.items?.length || 0} öğe • {new Date(list.updatedAt).toLocaleDateString('tr-TR')} tarihinde güncellendi
                         </p>
                       </div>
                     </div>
                     <Link href={`/todo-lists/${list.id}`}>
                       <Button variant="outline" size="sm">
-                        View
+                        Görüntüle
                       </Button>
                     </Link>
                   </div>
@@ -450,11 +449,11 @@ export default function PartnerOverviewPage() {
           ) : (
                 <div className="text-center py-8">
               <ListIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No todo lists yet</p>
+              <p className="text-gray-600">Henüz yapılacaklar listesi yok</p>
                   <Link href="/todo-lists/new">
                 <Button className="mt-4">
                   <PlusIcon className="h-4 w-4 mr-2" />
-                  Create First List
+                  İlk Listeyi Oluştur
                     </Button>
                   </Link>
                 </div>
@@ -463,7 +462,7 @@ export default function PartnerOverviewPage() {
 
         {/* Recent Activities */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activities</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Son Aktiviteler</h2>
               
           {partnerData?.recentActivities && partnerData.recentActivities.length > 0 ? (
             <div className="space-y-4">
@@ -477,7 +476,7 @@ export default function PartnerOverviewPage() {
                   </div>
                                      <div className="flex-1">
                      <p className="text-sm text-gray-900">{activity.message}</p>
-                     <p className="text-xs text-gray-500">{new Date(activity.createdAt).toLocaleDateString()}</p>
+                     <p className="text-xs text-gray-500">{new Date(activity.createdAt).toLocaleDateString('tr-TR')}</p>
             </div>
                 </div>
               ))}
@@ -485,7 +484,7 @@ export default function PartnerOverviewPage() {
           ) : (
             <div className="text-center py-8">
               <UsersIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No recent activities</p>
+              <p className="text-gray-600">Son aktivite yok</p>
             </div>
           )}
         </div>

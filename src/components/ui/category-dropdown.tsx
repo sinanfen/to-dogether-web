@@ -43,7 +43,7 @@ export default function CategoryDropdown({
   }, [])
 
   return (
-    <div ref={dropdownRef} className={`relative ${className}`}>
+    <div ref={dropdownRef} className={`relative z-[99999] ${className}`}>
       <button
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -63,7 +63,7 @@ export default function CategoryDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-[99999] max-h-60 overflow-y-auto">
           {categoryOptions.map((option) => (
             <button
               key={option.value}

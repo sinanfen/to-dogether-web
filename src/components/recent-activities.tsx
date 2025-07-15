@@ -39,7 +39,7 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
       setTotalCount(response.totalCount)
     } catch (err) {
       console.error('❌ Failed to load activities:', err)
-      setError('Failed to load recent activities')
+      setError('Son hareketler yüklenemedi')
     } finally {
       setLoading(false)
     }
@@ -102,12 +102,12 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-    if (diffMinutes < 1) return 'Just now'
-    if (diffMinutes < 60) return `${diffMinutes}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMinutes < 1) return 'Az önce'
+    if (diffMinutes < 60) return `${diffMinutes} dk önce`
+    if (diffHours < 24) return `${diffHours} sa önce`
+    if (diffDays < 7) return `${diffDays} gün önce`
     
-    return activityDate.toLocaleDateString('en-US', { 
+    return activityDate.toLocaleDateString('tr-TR', { 
       month: 'short', 
       day: 'numeric' 
     })
@@ -117,7 +117,7 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
     return (
       <div className={`bg-white rounded-2xl shadow-lg p-6 ${className}`}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activities</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Son Hareketler</h2>
           <div className="w-6 h-6 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
         </div>
         
@@ -141,7 +141,7 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
     return (
       <div className={`bg-white rounded-2xl shadow-lg p-6 ${className}`}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activities</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Son Hareketler</h2>
         </div>
         
         <div className="text-center py-8">
@@ -151,7 +151,7 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
               onClick={loadActivities}
               className="text-sm text-red-600 hover:text-red-700 font-medium"
             >
-              Try Again
+              Tekrar Dene
             </button>
           </div>
         </div>
@@ -163,16 +163,16 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
     <div className={`bg-white rounded-2xl shadow-lg p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activities</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Son Hareketler</h2>
           <p className="text-sm text-gray-500 mt-1">
-            {totalCount > 0 ? `${activities.length} of ${totalCount} activities` : 'No activities yet'}
+            {totalCount > 0 ? `${activities.length} / ${totalCount} hareket` : 'Henüz hareket yok'}
           </p>
         </div>
         
         <button
           onClick={loadActivities}
           className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-lg transition-colors group"
-          title="Refresh activities"
+          title="Hareketleri yenile"
         >
           <RefreshIcon className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
         </button>
@@ -181,9 +181,9 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
       {activities.length === 0 ? (
         <div className="text-center py-12">
           <ListIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Activities Yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz Hareket Yok</h3>
           <p className="text-gray-500">
-            Start creating todo lists and completing tasks to see activity here.
+            Yapılacaklar listeleri oluşturup görevleri tamamlayarak burada hareket görebilirsiniz.
           </p>
         </div>
       ) : (
@@ -224,9 +224,9 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
                             {activity.username}
                           </span>
                           <span className="text-xs text-gray-400">•</span>
-                                                     <span className="text-xs text-gray-500">
-                             {activity.entityType === EntityType.TodoList ? 'List' : 'Item'}
-                           </span>
+                          <span className="text-xs text-gray-500">
+                            {activity.entityType === EntityType.TodoList ? 'Liste' : 'Görev'}
+                          </span>
                         </div>
                       </div>
                       

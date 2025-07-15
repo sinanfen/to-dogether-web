@@ -35,7 +35,7 @@ function WelcomeContent() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -55,10 +55,10 @@ function WelcomeContent() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to To-Dogether! 🎉
+            To-Dogether&apos;a Hoş Geldiniz! 🎉
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Your account has been created successfully. Now let&apos;s connect with your partner!
+            Hesabınız başarıyla oluşturuldu. Şimdi partnerinizle bağlantı kurun!
           </p>
         </div>
 
@@ -69,10 +69,10 @@ function WelcomeContent() {
               <SparklesIcon className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              You&apos;re All Set! ✨
+              Her Şey Hazır! ✨
             </h2>
             <p className="text-gray-600 text-lg">
-              Since you&apos;re creating a new couple, here&apos;s your invite token to share with your partner:
+              Yeni bir çift oluşturduğunuz için, partnerinizle paylaşmanız gereken davet kodunuz aşağıda:
             </p>
           </div>
 
@@ -82,7 +82,7 @@ function WelcomeContent() {
               <div className="flex items-center space-x-3 mb-4">
                 <GiftIcon className="h-6 w-6 text-purple-600" />
                 <label className="block text-lg font-semibold text-purple-800">
-                  Your Invite Token
+                  Davet Kodunuz
                 </label>
               </div>
               <div className="flex items-center space-x-3">
@@ -92,7 +92,7 @@ function WelcomeContent() {
                 <button
                   onClick={copyToClipboard}
                   className="flex-shrink-0 p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-105 shadow-lg"
-                  title={copied ? 'Copied!' : 'Copy to clipboard'}
+                  title={copied ? 'Kopyalandı!' : 'Kopyala'}
                 >
                   {copied ? (
                     <CheckIcon className="h-5 w-5" />
@@ -108,30 +108,30 @@ function WelcomeContent() {
               <div className="flex items-center space-x-3 mb-4">
                 <UsersIcon className="h-6 w-6 text-blue-600" />
                 <h3 className="text-lg font-semibold text-blue-900">
-                  Share with Your Partner
+                  Partnerinizle Paylaşın
                 </h3>
               </div>
               <p className="text-blue-700 mb-4">
-                Send this token to your partner so they can join your couple when they register!
+                Bu kodu partnerinize gönderin, böylece kayıt olurken çiftinize katılabilir!
               </p>
               <div className="bg-white p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-2">📱 How to share:</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">📱 Nasıl paylaşılır:</h4>
                 <ul className="text-sm text-blue-700 space-y-2">
                   <li className="flex items-start space-x-2">
                     <span className="text-blue-500 font-bold">1.</span>
-                    <span>Copy the invite token above</span>
+                    <span>Yukarıdaki davet kodunu kopyalayın</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-blue-500 font-bold">2.</span>
-                    <span>Send it to your partner via message, email, or any way you prefer</span>
+                    <span>Partnerinize mesaj, e-posta veya istediğiniz bir yolla gönderin</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-blue-500 font-bold">3.</span>
-                    <span>When they register, they should toggle &quot;Do you have an invite token?&quot; and paste this token</span>
+                    <span>Kayıt olurken &quot;Davet kodunuz var mı?&quot; seçeneğini işaretleyip bu kodu yapıştırsın</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-blue-500 font-bold">4.</span>
-                    <span>Once they register, you&apos;ll be connected as a couple! 💕</span>
+                    <span>Kayıt tamamlandığında artık çift olarak bağlısınız! 💕</span>
                   </li>
                 </ul>
               </div>
@@ -140,24 +140,24 @@ function WelcomeContent() {
             {/* Features Preview */}
             <div className="p-6 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl">
               <h3 className="text-lg font-semibold text-emerald-900 mb-3">
-                🚀 What you can do together:
+                🚀 Birlikte Neler Yapabilirsiniz:
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-700">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Create shared todo lists</span>
+                  <span>Ortak yapılacaklar listeleri oluşturun</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Assign tasks to each other</span>
+                  <span>Birbirinize görev atayın</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Track progress together</span>
+                  <span>İlerlemenizi birlikte takip edin</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>See each other&apos;s activities</span>
+                  <span>Birbirinizin aktivitelerini görün</span>
                 </div>
               </div>
             </div>
@@ -167,13 +167,13 @@ function WelcomeContent() {
           <div className="pt-6 border-t border-gray-200 space-y-4">
             <Link href="/dashboard">
               <Button variant="gradient" className="w-full text-lg py-4">
-                Continue to Dashboard
+                Panele Devam Et
               </Button>
             </Link>
             
             <div className="text-center">
               <p className="text-sm text-gray-500">
-                Don&apos;t worry, you can always find this token in your profile settings later
+                Merak etmeyin, bu kodu daha sonra profil ayarlarınızda da bulabilirsiniz
               </p>
             </div>
           </div>
@@ -189,7 +189,7 @@ function LoadingFallback() {
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     </div>

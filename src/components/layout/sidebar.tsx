@@ -45,15 +45,15 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   }, [])
 
   const navItems: NavItem[] = [
-    { href: '/dashboard', label: 'Dashboard', icon: HomeIcon },
-    { href: '/todo-lists', label: 'Todo Lists', icon: ListIcon },
+    { href: '/dashboard', label: 'Ana Sayfa', icon: HomeIcon },
+    { href: '/todo-lists', label: 'Todo Listeleri', icon: ListIcon },
     { 
       href: '/partner', 
-      label: 'Partner', 
+      label: 'Ortak', 
       icon: UsersIcon,
       badge: user?.partner ? '✓' : '!'
     },
-    { href: '/profile', label: 'Profile', icon: SettingsIcon },
+    { href: '/profile', label: 'Profil', icon: SettingsIcon },
   ]
 
   const handleLogout = async () => {
@@ -114,7 +114,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 To-Dogether
               </h1>
               {user && (
-                <p className="text-sm text-gray-500">Welcome, {user.username}</p>
+                <p className="text-sm text-gray-500">Hoş geldin, {user.username}</p>
               )}
             </div>
           </div>
@@ -124,7 +124,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             onClick={onToggle}
             className="lg:hidden p-3 rounded-xl hover:bg-white/50 active:bg-white/70 transition-colors touch-manipulation"
             style={{ minWidth: '44px', minHeight: '44px' }}
-            aria-label="Close navigation menu"
+            aria-label="Navigasyon menüsünü kapat"
           >
             <XMarkIcon className="h-5 w-5 text-gray-500" />
           </button>
@@ -143,11 +143,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{user.username}</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-sm text-gray-500">Your Profile</p>
+                  <p className="text-sm text-gray-500">Profiliniz</p>
                   {user.partner && (
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-xs text-green-600 font-medium">Connected</span>
+                      <span className="text-xs text-green-600 font-medium">Bağlı</span>
                     </div>
                   )}
                 </div>
@@ -204,7 +204,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           {/* Quick actions section */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 px-4">
-              Quick Actions
+              Hızlı İşlemler
             </h3>
             <div className="space-y-2">
               <Link
@@ -214,7 +214,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 style={{ minHeight: '48px' }}
               >
                 <ListIcon className="h-5 w-5" />
-                <span className="font-medium">New Todo List</span>
+                <span className="font-medium">Yeni Todo Listesi</span>
               </Link>
             </div>
           </div>
@@ -227,17 +227,17 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             disabled={isLoggingOut}
             className="flex items-center justify-center space-x-3 w-full px-4 py-4 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group touch-manipulation active:scale-[0.98] cursor-pointer"
             style={{ minHeight: '56px' }}
-            aria-label="Logout from application"
+            aria-label="Uygulamadan çıkış yap"
           >
             {isLoggingOut ? (
               <>
                 <div className="w-5 h-5 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
-                <span className="font-medium">Logging out...</span>
+                <span className="font-medium">Çıkış yapılıyor...</span>
               </>
             ) : (
               <>
                 <LogoutIcon className="h-5 w-5 text-gray-500 group-hover:text-red-500 transition-colors" />
-                <span className="font-medium">Logout</span>
+                <span className="font-medium">Çıkış Yap</span>
               </>
             )}
           </button>
@@ -245,7 +245,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           {/* Version info */}
           <div className="mt-3 text-center">
             <p className="text-xs text-gray-400">
-              To-Dogether v1.0 • PWA Ready
+              To-Dogether v1.0 • PWA Hazır
             </p>
           </div>
         </div>

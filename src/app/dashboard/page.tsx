@@ -129,7 +129,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -175,7 +175,7 @@ export default function DashboardPage() {
               className="mt-4"
               variant="outline"
             >
-              Retry
+              Tekrar Dene
             </Button>
           </div>
         </div>
@@ -202,10 +202,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  Welcome back, {user.username}! 👋
+                  Tekrar hoş geldin, {user.username}! 👋
                 </h1>
                 <p className="text-purple-100">
-                  Ready to plan together
+                  Birlikte planlamaya hazır mısın?
                 </p>
               </div>
             </div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Lists</p>
+                  <p className="text-sm font-medium text-gray-600">Toplam Liste</p>
                   <p className="text-2xl font-bold text-purple-600">{stats.totalLists}</p>
                 </div>
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
+                  <p className="text-sm font-medium text-gray-600">Tamamlandı</p>
                   <p className="text-2xl font-bold text-green-600">{stats.completedItems}</p>
                 </div>
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completion</p>
+                  <p className="text-sm font-medium text-gray-600">Tamamlama Oranı</p>
                   <p className="text-2xl font-bold text-blue-600">{stats.completionRate}%</p>
                 </div>
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -289,14 +289,14 @@ export default function DashboardPage() {
           {/* Recent Lists */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Recent Lists</h2>
+              <h2 className="text-xl font-bold text-gray-900">Son Listeler</h2>
               <Link href="/todo-lists">
                 <Button 
                   variant="outline" 
                   size="sm"
                   className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 hover:shadow-lg transition-all duration-300 group"
                 >
-                  <span className="mr-1">View All</span>
+                  <span className="mr-1">Tümünü Görüntüle</span>
                   <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
@@ -318,9 +318,6 @@ export default function DashboardPage() {
                           {list.title}
                         </h3>
                       </div>
-                      <span className="text-xs text-gray-500 capitalize">
-                        {list.priority} priority
-                      </span>
                     </div>
 
                     <p className="text-gray-600 text-sm mb-3 line-clamp-1">
@@ -330,11 +327,11 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <span className="text-xs text-gray-600">
-                          {list.completedItemsCount}/{list.itemsCount} completed
+                          {list.completedItemsCount}/{list.itemsCount} tamamlandı
                         </span>
                         {list.isShared && (
                           <span className="bg-purple-100 text-purple-600 text-xs px-2 py-1 rounded-full">
-                            Shared
+                            Paylaşıldı
                           </span>
                         )}
                       </div>
@@ -354,7 +351,7 @@ export default function DashboardPage() {
               <div className="mt-4 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 cursor-pointer group">
                 <PlusIcon className="h-8 w-8 text-gray-400 group-hover:text-purple-500 mx-auto mb-2 transition-colors" />
                 <p className="text-gray-600 group-hover:text-purple-600 font-medium transition-colors">
-                  Create New List
+                  Yeni Liste Oluştur
                 </p>
               </div>
             </Link>
@@ -364,19 +361,19 @@ export default function DashboardPage() {
           <div className="space-y-6">
             {/* Progress Overview */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">This Week</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Bu Hafta</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Completed Tasks</span>
+                  <span className="text-gray-600">Tamamlanan Görevler</span>
                   <span className="font-semibold text-purple-600">{stats?.thisWeekCompleted || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Active Streak</span>
-                  <span className="font-semibold text-orange-600">{stats?.activeStreakDays || 0} days</span>
+                  <span className="text-gray-600">Aktif Streak</span>
+                  <span className="font-semibold text-orange-600">{stats?.activeStreakDays || 0} gün</span>
                 </div>
                 <div className="pt-2">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Overall Progress</span>
+                    <span className="text-sm text-gray-600">Genel Tamamlama Oranı</span>
                     <span className="text-sm font-medium">{stats?.completionRate || 0}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
@@ -394,7 +391,7 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-semibold mb-4">Hızlı Eylemler</h3>
               <div className="space-y-6">
                 <Link href="/todo-lists/new">
                   <Button 
@@ -402,7 +399,7 @@ export default function DashboardPage() {
                     className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
-                    New List
+                    Yeni Liste
                   </Button>
                 </Link>
                 <Link href="/partner">
@@ -411,7 +408,7 @@ export default function DashboardPage() {
                     className="w-full mt-3 bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
                   >
                     <HeartIcon className="h-4 w-4 mr-2" />
-                    Partner Overview
+                    Partner Özeti
                   </Button>
                 </Link>
               </div>

@@ -12,7 +12,7 @@ import {
   CheckIcon,
   XMarkIcon,
   ShareIcon,
-  CopyIcon
+  ClipboardIcon
 } from '@/components/ui/icons'
 import { api } from '@/lib/api'
 import type { UpdateUserProfileRequest } from '@/types/api'
@@ -76,7 +76,7 @@ export default function ProfilePage() {
       setIsModalOpen(true)
       setModalCopied(false) // Reset copy state
     } catch (err) {
-      setError('Failed to get invite code')
+      setError('Davet kodu alınamadı')
       console.error('Invite code error:', err)
     } finally {
       setModalLoading(false)
@@ -113,7 +113,7 @@ export default function ProfilePage() {
       setEditMode(false)
     } catch (err) {
       console.error('❌ Profile update error:', err)
-      setError('Failed to update profile')
+      setError('Profil güncellenemedi')
     } finally {
       setLoading(false)
     }
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -166,75 +166,82 @@ export default function ProfilePage() {
 
         {/* Top Header - Full Width */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center space-x-4">
-            <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg"
-              style={{ backgroundColor: formData.colorCode }}
-            >
-              {formData.username.charAt(0).toUpperCase()}
+          {/* 1. Satır: Avatar, İsim, Açıklama */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+            <div className="flex items-center justify-center mb-4 sm:mb-0">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg bg-center bg-cover"
+                style={{ backgroundColor: formData.colorCode }}
+              >
+                {formData.username.charAt(0).toUpperCase()}
+              </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col justify-center items-start">
               <h1 className="text-2xl font-bold text-gray-900">{formData.username}</h1>
               <p className="text-gray-600">
-                {user.partner ? `Connected with ${user.partner.username}` : 'Single user'}
+                {user.partner ? `Partner: ${user.partner.username}` : 'Tek kullanıcı'}
               </p>
             </div>
-            <div className="flex space-x-2">
-              {!editMode ? (
+          </div>
+          {/* 2. Satır: Butonlar */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {!editMode ? (
+              <Button 
+                variant="outline"
+                onClick={() => setEditMode(true)}
+                size="sm"
+                className="w-full border-purple-500 text-purple-600 hover:bg-purple-50"
+              >
+                <EditIcon className="h-4 w-4 mr-2" />
+                Profili Düzenle
+              </Button>
+            ) : (
+              <>
                 <Button 
                   variant="outline"
-                  onClick={() => setEditMode(true)}
-                  className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                  onClick={handleCancelEdit}
+                  size="sm"
+                  className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
-                  <EditIcon className="h-4 w-4 mr-2" />
-                  Edit Profile
+                  <XMarkIcon className="h-4 w-4 mr-2" />
+                  İptal Et
                 </Button>
-              ) : (
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="outline"
-                    onClick={handleCancelEdit}
-                    className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                  >
-                    <XMarkIcon className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleSaveProfile}
-                    disabled={loading}
-                    className="bg-purple-600 text-white hover:bg-purple-700"
-                  >
-                    {loading ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    ) : (
-                      <CheckIcon className="h-4 w-4 mr-2" />
-                    )}
-                    Save Changes
-                  </Button>
-                </div>
-              )}
-            </div>
+                <Button 
+                  onClick={handleSaveProfile}
+                  disabled={loading}
+                  size="sm"
+                  className="w-full bg-purple-600 text-white hover:bg-purple-700"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  ) : (
+                    <CheckIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Değişiklikleri Kaydet
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Main Profile Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 overflow-x-auto">
           <h2 className="text-2xl font-semibold text-gray-900 mb-8 flex items-center">
             <UserIcon className="h-6 w-6 mr-3 text-purple-600" />
-            Profile Settings
+            Profil Ayarları
           </h2>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
             {/* Username Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Username
+                Kullanıcı Adı
               </label>
               {editMode ? (
                 <Input
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="Enter your username"
+                  placeholder="Kullanıcı adınızı girin"
                   className="w-full"
                 />
               ) : (
@@ -247,7 +254,7 @@ export default function ProfilePage() {
             {/* Color Code Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Profile Color
+                Profil Rengi
               </label>
               {editMode ? (
                 <ColorPicker
@@ -306,12 +313,12 @@ export default function ProfilePage() {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <ShareIcon className="h-5 w-5 mr-2 text-purple-600" />
-              Invite Code
+              Davet Kodu
             </h3>
             
             <div className="space-y-3">
               <p className="text-gray-600 text-sm">
-                Share your invite code with friends.
+                Davet kodunu arkadaşlarınla paylaş.
               </p>
               
               <Button
@@ -325,7 +332,7 @@ export default function ProfilePage() {
                 ) : (
                   <ShareIcon className="h-4 w-4 mr-2" />
                 )}
-                Get Code
+                Kodu Al
               </Button>
             </div>
           </div>
@@ -336,12 +343,12 @@ export default function ProfilePage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Your Invite Code"
+        title="Davet Kodunuz"
       >
         <div className="space-y-6">
           <div className="text-center">
             <p className="text-gray-600">
-              Share this code with your friends so they can connect with you and your partner:
+              Bu kodu arkadaşlarınla paylaş, böylece seninle ve partnerinle eşleşebilirler:
             </p>
           </div>
           
@@ -354,10 +361,10 @@ export default function ProfilePage() {
                 <Button
                   onClick={copyModalToken}
                   variant="outline"
-                  className="border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white"
+                  className="flex items-center justify-center gap-2 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white px-3 py-2 w-full max-w-xs mx-auto text-sm"
                 >
-                  <CopyIcon className="h-5 w-5 mr-2 flex-shrink-0 stroke-current" />
-                  {modalCopied ? 'Copied!' : 'Copy Code'}
+                  <ClipboardIcon className="h-5 w-5 flex-shrink-0 stroke-current" />
+                  <span className="font-semibold">{modalCopied ? 'Kopyalandı!' : 'Kodu Kopyala'}</span>
                 </Button>
               </div>
             </div>
@@ -365,20 +372,20 @@ export default function ProfilePage() {
           
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-3 flex items-center">
-              📱 How to share:
+              📱 Nasıl paylaşılır:
             </h4>
             <ul className="text-sm text-blue-800 space-y-2">
               <li className="flex items-start">
                 <span className="font-bold mr-2">1.</span>
-                <span>Copy the code above</span>
+                <span>Yukarıdaki kodu kopyala</span>
               </li>
               <li className="flex items-start">
                 <span className="font-bold mr-2">2.</span>
-                <span>Send it to your friends</span>
+                <span>Kodu arkadaşlarına gönder</span>
               </li>
               <li className="flex items-start">
                 <span className="font-bold mr-2">3.</span>
-                <span>They can use it during registration</span>
+                <span>Kayıt olurken bu kodu kullanabilirler</span>
               </li>
             </ul>
           </div>

@@ -98,14 +98,14 @@ export function PWAInstallPrompt() {
               <DownloadIcon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Install To-Dogether</h3>
-              <p className="text-sm text-gray-600">Add to your home screen</p>
+              <h3 className="font-semibold text-gray-900">To-Dogether&apos;i Kur</h3>
+              <p className="text-sm text-gray-600">Ana ekranınıza ekleyin</p>
             </div>
           </div>
           <button
             onClick={handleDismiss}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Dismiss install prompt"
+            aria-label="Kurulum önerisini kapat"
           >
             <XMarkIcon className="h-5 w-5 text-gray-400" />
           </button>
@@ -114,15 +114,15 @@ export function PWAInstallPrompt() {
         <div className="space-y-3 mb-4">
           <div className="flex items-center space-x-3 text-sm text-gray-600">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Works offline</span>
+            <span>Çevrimdışı çalışır</span>
           </div>
           <div className="flex items-center space-x-3 text-sm text-gray-600">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Fast loading</span>
+            <span>Hızlı yükleme</span>
           </div>
           <div className="flex items-center space-x-3 text-sm text-gray-600">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Native app experience</span>
+            <span>Native uygulama deneyimi</span>
           </div>
         </div>
 
@@ -132,14 +132,14 @@ export function PWAInstallPrompt() {
             variant="outline"
             className="flex-1"
           >
-            Maybe Later
+            Belki Daha Sonra
           </Button>
           <Button
             onClick={handleInstallClick}
             className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
           >
             <DownloadIcon className="h-4 w-4 mr-2" />
-            Install
+            Kur
           </Button>
         </div>
       </div>

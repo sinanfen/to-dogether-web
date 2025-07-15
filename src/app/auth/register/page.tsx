@@ -58,29 +58,29 @@ export default function RegisterPage() {
               To-Dogether
             </h1>
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900">Join To-Dogether</h2>
-          <p className="mt-2 text-gray-600">Create your account and start planning together</p>
+          <h2 className="text-3xl font-bold text-gray-900">To-Dogether&apos;a Katıl</h2>
+          <p className="mt-2 text-gray-600">Hesabınızı oluşturun ve birlikte planlamaya başlayın</p>
         </div>
 
         <form className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-lg" onSubmit={handleSubmit}>
           <div className="space-y-6">
             <Input
-              label="Username"
+              label="Kullanıcı Adı"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Choose a username"
+              placeholder="Bir kullanıcı adı seçin"
               required
               autoComplete="username"
               className="transition-all duration-300 focus:scale-105"
             />
             
             <Input
-              label="Password"
+              label="Şifre"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password"
+              placeholder="Bir şifre oluşturun"
               required
               showPasswordToggle={true}
               autoComplete="new-password"
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             />
 
             <ColorPicker
-              label="Choose Your Color"
+              label="Renk Seçiniz"
               value={colorCode}
               onChange={setColorCode}
               className="transition-all duration-300"
@@ -98,34 +98,50 @@ export default function RegisterPage() {
             <div className="border-t border-gray-200 pt-6">
               <div className="mb-4">
                 <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="hasInviteToken"
-                  checked={hasInviteToken}
-                  onChange={(e) => setHasInviteToken(e.target.checked)}
-                    className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
-                />
-                <label htmlFor="hasInviteToken" className="text-sm font-medium text-gray-700 cursor-pointer">
-                  Do you have an invite token from your partner?
-                </label>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      id="hasInviteToken"
+                      checked={hasInviteToken}
+                      onChange={(e) => setHasInviteToken(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <label 
+                      htmlFor="hasInviteToken" 
+                      className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        hasInviteToken 
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 border-purple-500 shadow-lg' 
+                          : 'bg-white border-gray-300 hover:border-purple-400'
+                      }`}
+                    >
+                      {hasInviteToken && (
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </label>
+                  </div>
+                  <label htmlFor="hasInviteToken" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Partnerinizden bir davet kodunuz var mı?
+                  </label>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 ml-8">
-                  Check if you received an invite token from your partner
+                <p className="text-xs text-gray-500 mt-1 ml-9">
+                  Partnerinizden bir davet kodu aldıysanız işaretleyin
                 </p>
               </div>
               
               {hasInviteToken && (
                 <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <Input
-                    label="Invite Token"
+                    label="Davet Kodu"
                     type="text"
                     value={inviteToken}
                     onChange={(e) => setInviteToken(e.target.value)}
-                    placeholder="Enter your partner's invite token"
+                    placeholder="Partnerinizin davet kodunu girin"
                     className="transition-all duration-300 focus:scale-105"
                   />
                   <p className="mt-2 text-xs text-purple-600">
-                    💡 Your partner should have shared this token with you after creating their account
+                    💡 Partneriniz hesabını oluşturduktan sonra bu kodu sizinle paylaşmalı
                   </p>
                 </div>
               )}
@@ -133,8 +149,8 @@ export default function RegisterPage() {
               {!hasInviteToken && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    <strong>Creating a new couple?</strong><br />
-                    You&apos;ll receive an invite token after registration to share with your partner!
+                    <strong>Yeni bir çift mi oluşturuyorsunuz?</strong><br />
+                    Kayıt olduktan sonra partnerinizle paylaşmak için bir davet kodu alacaksınız!
                   </p>
                 </div>
               )}
@@ -156,16 +172,16 @@ export default function RegisterPage() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                'Create Account'
+                'Hesap Oluştur'
               )}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              Zaten bir hesabınız var mı?{' '}
               <Link href="/auth/login" className="font-semibold text-purple-600 hover:text-purple-500 transition-colors">
-                Sign in here
+                Buradan giriş yapın
               </Link>
             </p>
           </div>

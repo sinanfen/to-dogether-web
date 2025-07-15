@@ -44,8 +44,8 @@ function InviteSuccessContent() {
               <HeartIcon className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to To-Dogether!</h1>
-          <p className="text-gray-600">Your account has been created successfully</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">To-Dogether&apos;a Hoş Geldiniz!</h1>
+          <p className="text-gray-600">Hesabınız başarıyla oluşturuldu</p>
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-lg space-y-6">
@@ -53,16 +53,16 @@ function InviteSuccessContent() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckIcon className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">You&apos;re All Set!</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Her Şey Hazır!</h2>
             <p className="text-gray-600 text-sm">
-              Since you&apos;re creating a new couple, here&apos;s your invite token to share with your partner:
+              Yeni bir çift oluşturduğunuz için, partnerinizle paylaşmanız gereken davet kodunuz aşağıda:
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
               <label className="block text-sm font-medium text-purple-700 mb-2">
-                Your Invite Token
+                Davet Kodunuz
               </label>
               <div className="flex items-center space-x-2">
                 <code className="flex-1 p-3 bg-white border border-purple-300 rounded-lg text-purple-800 font-mono text-sm break-all">
@@ -71,7 +71,7 @@ function InviteSuccessContent() {
                 <button
                   onClick={copyToClipboard}
                   className="flex-shrink-0 p-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  title={copied ? 'Copied!' : 'Copy to clipboard'}
+                  title={copied ? 'Kopyalandı!' : 'Kopyala'}
                 >
                   {copied ? (
                     <CheckIcon className="h-4 w-4" />
@@ -83,14 +83,14 @@ function InviteSuccessContent() {
             </div>
 
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">📱 Share with Your Partner</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">📱 Partnerinizle Paylaşın</h3>
               <p className="text-sm text-blue-700 mb-3">
-                Send this token to your partner so they can join your couple when they register!
+                Bu kodu partnerinize gönderin, böylece kayıt olurken çiftinize katılabilir!
               </p>
               <ul className="text-xs text-blue-600 space-y-1">
-                <li>• They should check &quot;Do you have an invite token?&quot; during registration</li>
-                <li>• Paste this token in the invite token field</li>
-                <li>• Once they register, you&apos;ll be connected as a couple! 💕</li>
+                <li>• Kayıt sırasında &quot;Davet kodunuz var mı?&quot; seçeneğini işaretlesinler</li>
+                <li>• Bu kodu davet kodu alanına yapıştırsınlar</li>
+                <li>• Kayıt tamamlandığında artık çift olarak bağlısınız! 💕</li>
               </ul>
             </div>
           </div>
@@ -98,7 +98,7 @@ function InviteSuccessContent() {
           <div className="pt-4 border-t border-gray-200">
             <Link href="/dashboard">
               <Button variant="gradient" className="w-full">
-                Continue to Dashboard
+                Panele Devam Et
               </Button>
             </Link>
           </div>
@@ -106,7 +106,7 @@ function InviteSuccessContent() {
 
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            You can always find this token in your profile settings later
+            Bu kodu daha sonra profil ayarlarınızda da bulabilirsiniz
           </p>
         </div>
       </div>
@@ -120,7 +120,7 @@ function LoadingFallback() {
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
           <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Yükleniyor...</p>
         </div>
       </div>
     </div>

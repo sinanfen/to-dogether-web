@@ -62,9 +62,28 @@ class ApiClient {
     }
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`
-    
+  async refreshToken(): Promise<{ accessToken: string; refreshToken: string }> {
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    if (!refreshToken) throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!response.ok) {
+      this.clearToken();
+      throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
+    }
+    const data = await response.json();
+    this.setToken(data.accessToken);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
+    return data;
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}, retry = false): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -72,39 +91,42 @@ class ApiClient {
         ...options.headers,
       },
       ...options,
-    }
-
+    };
     try {
-      const response = await fetch(url, config)
-      
-      if (!response.ok) {
-        // Try to get error message from response body
-        let errorMessage = `API Error: ${response.status} - ${response.statusText}`
+      const response = await fetch(url, config);
+      if (response.status === 401 && !retry) {
+        // Token expired, try to refresh
         try {
-          const errorData = await response.json()
-          if (errorData.message) {
-            errorMessage = errorData.message
-          } else if (errorData.error) {
-            errorMessage = errorData.error
-          }
+          await this.refreshToken();
+          // Retry original request with new token
+          return await this.request<T>(endpoint, options, true);
         } catch {
-          // If we can't parse the error response, use the default message
+          this.clearToken();
+          throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
         }
-        throw new Error(errorMessage)
       }
-
-      // Check if response has content (204 No Content has no body)
-      const contentType = response.headers.get('content-type')
+      if (!response.ok) {
+        let errorMessage = `API Error: ${response.status} - ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {}
+        throw new Error(errorMessage);
+      }
+      const contentType = response.headers.get('content-type');
       if (response.status === 204 || !contentType || !contentType.includes('application/json')) {
-        return {} as T
+        return {} as T;
       }
-
-      return response.json()
+      return response.json();
     } catch (error) {
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error('Sunucuya bağlanılamadı. Backend çalışıyor mu kontrol edin.')
+        throw new Error('Sunucuya bağlanılamadı. Backend çalışıyor mu kontrol edin.');
       }
-      throw error
+      throw error;
     }
   }
 
