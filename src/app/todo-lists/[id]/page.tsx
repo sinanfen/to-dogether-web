@@ -407,82 +407,79 @@ export default function TodoListDetailPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Header Section */}
-        <div
-          className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl shadow-xl text-white box-border overflow-x-hidden mobile-header-section px-6 md:px-12 py-7"
-        >
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 min-w-0">
-            {/* Sol: Breadcrumb, başlık, açıklama, emoji, istatistikler */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between">
-              <div className="flex items-center mb-3 pl-4">
-                <button
-                  onClick={() => router.back()}
-                  className="mr-3 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
-                  aria-label="Geri"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                  </svg>
-                </button>
-                <span className="text-purple-100 text-xs sm:text-sm font-medium ml-2">
-                  Yapılacaklar Listesi <span className="mx-1">/</span> <span className="text-white">Detay</span>
-                </span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2 leading-tight break-words truncate w-full min-w-0 pl-4 drop-shadow-lg">
-                {todoList.title}
-              </h1>
-              {/* Emoji sırası */}
-              <div className="flex flex-wrap gap-1 mb-3 pl-4 text-2xl md:text-3xl">
-                
-                
-              </div>
-              {todoList.description && (
-                <p className="text-base md:text-lg text-purple-100 mb-3 max-w-full leading-relaxed break-words w-full min-w-0 pl-4">
-                  {todoList.description}
-                </p>
-              )}
-              {/* İstatistikler */}
-              <div className="flex flex-row gap-4 mt-2 pl-4">
-                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
-                  <ListIcon className="w-5 h-5 text-white/90" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-white/80">Toplam Görev</span>
-                    <span className="text-lg font-bold text-white/90">{todoList.itemsCount || 0}</span>
-                  </div>
-                </div>
-                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
-                  <CheckIcon className="w-5 h-5 text-white/90" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-white/80">Tamamlandı</span>
-                    <span className="text-lg font-bold text-white/90">{todoList.completedItemsCount || 0}</span>
-                  </div>
-                </div>
-                <div className="flex flex-row items-center gap-2 bg-white/10 rounded-lg px-4 py-2 shadow min-w-[120px]">
-                  <TargetIcon className="w-5 h-5 text-white/90" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-white/80">İlerleme</span>
-                    <span className="text-lg font-bold text-white/90">{todoList.completionPercentage || 0}%</span>
-                  </div>
-                </div>
-              </div>
+      <div className="w-full space-y-6 px-2 sm:px-1">
+        {/* Header Section - Compact Design */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left Card - Title and Description */}
+          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-xl shadow-lg text-white p-4 sm:p-6">
+            <div className="flex items-center mb-3 sm:mb-4">
+              <button
+                onClick={() => router.back()}
+                className="mr-2 sm:mr-3 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Geri"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 sm:w-5 sm:h-5 text-white">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <span className="text-purple-100 text-xs sm:text-sm font-medium truncate">
+                Yapılacaklar Listesi <span className="mx-1">/</span> <span className="text-white">Detay</span>
+              </span>
             </div>
-            {/* Sağ: Sadece Listeyi Düzenle butonu */}
-            <div className="flex flex-row md:flex-col gap-2 md:gap-3 items-start md:items-end mt-2 md:mt-0 pr-2">
+            
+            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-2 sm:mb-3 leading-tight break-words drop-shadow-lg">
+              {todoList.title}
+            </h1>
+            
+            {todoList.description && (
+              <p className="text-xs sm:text-sm lg:text-base text-purple-100 leading-relaxed break-words">
+                {todoList.description}
+              </p>
+            )}
+            
+            {/* Progress Bar */}
+            <div className="mt-3 sm:mt-4">
+              <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white/80 rounded-full transition-all duration-500"
+                  style={{ width: `${todoList.completionPercentage || 0}%` }}
+                />
+              </div>
+              <p className="text-xs text-purple-100 mt-1">İlerleme: {todoList.completionPercentage || 0}%</p>
+            </div>
+          </div>
+
+          {/* Right Card - Statistics and Actions */}
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">İstatistikler</h3>
               <Link href={`/todo-lists/${todoList.id}/edit`}>
-                <button className="flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold px-4 py-2 rounded-lg shadow transition-colors text-sm md:text-base gap-2 cursor-pointer">
-                  <EditIcon className="w-4 h-4" />
-                  Listeyi Düzenle
+                <button className="flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow transition-colors text-xs sm:text-sm gap-1 sm:gap-2 min-w-[32px] sm:min-w-0">
+                  <EditIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Düzenle</span>
                 </button>
               </Link>
             </div>
-          </div>
-          {/* Progress Bar */}
-          <div className="w-full h-3 bg-white/20 rounded-full mt-7 overflow-hidden mx-4 md:mx-12">
-            <div
-              className="h-full bg-white/80 rounded-full transition-all duration-500"
-              style={{ width: `${todoList.completionPercentage || 0}%` }}
-            />
+            
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
+                <ListIcon className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600 mx-auto mb-1 sm:mb-2" />
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{todoList.itemsCount || 0}</div>
+                <div className="text-xs text-blue-700 font-medium">Toplam</div>
+              </div>
+              
+              <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
+                <CheckIcon className="w-4 h-4 sm:w-6 sm:h-6 text-green-600 mx-auto mb-1 sm:mb-2" />
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{todoList.completedItemsCount || 0}</div>
+                <div className="text-xs text-green-700 font-medium">Tamamlandı</div>
+              </div>
+              
+              <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200/50">
+                <TargetIcon className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-900">{todoList.completionPercentage || 0}%</div>
+                <div className="text-xs text-purple-700 font-medium">İlerleme</div>
+              </div>
+            </div>
           </div>
         </div>
         {/* Add New Item Form */}
@@ -581,17 +578,17 @@ export default function TodoListDetailPage() {
           </div>
         )}
         {/* Todo Items */}
-        <div className="space-y-2 md:space-y-3 w-full max-w-full min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 min-w-0 w-full">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 min-w-0">Görevler ({todoList.items?.length || 0})</h2>
+        <div className="space-y-2 md:space-y-3 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 px-1">Görevler ({todoList.items?.length || 0})</h2>
             
             {/* Removed "Görev Ekle" button */}
             
             {isReadOnlyPartnerList() && (
-              <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                <span className="text-sm text-yellow-700 font-medium">
-                  Salt okunur mod - Bu, ortak listenizin bir ortağınızın özel listesidir
+              <div className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-yellow-700 font-medium">
+                  Salt okunur mod
                 </span>
               </div>
             )}
@@ -599,15 +596,15 @@ export default function TodoListDetailPage() {
 
           {/* Quick Add Input - Always Visible */}
           {canEditItems() && !isReadOnlyPartnerList() && (
-            <div className="bg-white rounded-lg shadow-md p-4 w-full box-border">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 min-w-0 w-full">
-                <div className="flex items-center gap-2 min-w-0 w-full">
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 w-full">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 w-full">
                   <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
                   <input
                     ref={quickAddInputRef}
                     type="text"
                     placeholder="Görev ekle..."
-                    className="flex-1 min-w-0 max-w-full bg-transparent border border-gray-200 rounded-full px-4 py-2 outline-none text-gray-900 placeholder-gray-500 text-sm focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                    className="flex-1 bg-transparent border border-gray-200 rounded-full px-3 sm:px-4 py-2 outline-none text-gray-900 placeholder-gray-500 text-sm focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
                     autoFocus
                     onKeyDown={async (e) => {
                       if (e.key === 'Enter' && e.currentTarget.value.trim()) {
@@ -666,20 +663,20 @@ export default function TodoListDetailPage() {
           )}
 
           {todoList.items && todoList.items.length > 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-4 w-full box-border">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Görev Listesi</h3>
-                <p className="text-sm text-gray-600 mt-1">{todoList.items.length} görev{todoList.items.length !== 1 ? 'ler' : ''}</p>
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 w-full">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 px-1">Görev Listesi</h3>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1 px-1">{todoList.items.length} görev{todoList.items.length !== 1 ? 'ler' : ''}</p>
               </div>
-              <div className="max-h-[60vh] overflow-y-auto mobile-scroll">
-                <div className="p-4 space-y-3">
+              <div className="max-h-[60vh] overflow-y-auto">
+                <div className="p-3 sm:p-4 space-y-3">
                   {todoList.items.map((item) => (
                     <div key={item.id} className="group relative">
                       {/* Background gradient based on priority */}
                       <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-xl opacity-30`}></div>
                       
                       {/* Content */}
-                      <div className={`relative bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-gray-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-75 shadow-gray-300/50' : ''}`}>
+                      <div className={`relative bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300 group-hover:border-gray-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-75 shadow-gray-300/50' : ''}`}>
                         {editingItemId === item.id ? (
                           /* Edit Form */
                           <div className="space-y-3">

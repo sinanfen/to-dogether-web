@@ -287,7 +287,7 @@ export default function NewTodoListPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full space-y-6 px-2 sm:px-1">
         {/* Progress indicator */}
         <div className="flex items-center justify-center space-x-4 mb-8">
           <div className={`flex items-center space-x-2 ${currentStep === 'template' ? 'text-purple-600' : 'text-gray-400'}`}>
@@ -310,12 +310,12 @@ export default function NewTodoListPage() {
         {currentStep === 'template' && (
           <div className="space-y-6">
             {/* Header */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <PlusIcon className="h-8 w-8 text-white" />
+            <div className="text-center px-2">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <PlusIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Yeni Todo Listesi Oluşturun</h1>
-              <p className="text-gray-600">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Yeni Todo Listesi Oluşturun</h1>
+              <p className="text-sm sm:text-base text-gray-600">
                 Hızlı bir şablon seçin veya tamamen özelleştirin
               </p>
             </div>
@@ -323,47 +323,42 @@ export default function NewTodoListPage() {
        
 
             {/* Templates */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 px-1">
                 📋 Hızlı Başlatma Şablonları
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
                 {templates.map((template) => {
                   const Icon = template.icon
                   return (
                     <button
                       key={template.id}
                       onClick={() => handleTemplateSelect(template)}
-                      className="text-left p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-md transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
+                      className="text-left p-3 sm:p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-md transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
                     >
-                      <div className="flex items-center space-x-3 mb-2">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
                         <div 
-                          className="p-2 rounded-lg"
+                          className="p-1.5 sm:p-2 rounded-lg"
                           style={{ backgroundColor: template.color + '20' }}
                         >
-                                                     <Icon className="h-5 w-5 text-gray-600" />
+                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                         </div>
                         <div 
-                          className="w-3 h-3 rounded-full"
+                          className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full"
                           style={{ backgroundColor: template.color }}
                         />
                       </div>
-                      <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
                         {template.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
                         {template.description}
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-500">
                           {template.items.length} öğe
                         </span>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">
-                            {template.items.length} öğe
-                          </span>
-                        </div>
                       </div>
                     </button>
                   )
@@ -398,12 +393,12 @@ export default function NewTodoListPage() {
         {currentStep === 'form' && (
           <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2 px-2">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                   {selectedTemplate ? `Özelleştirin ${selectedTemplate.name}` : 'Özelleştirilmiş Liste Oluşturun'}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   Liste ayarlarınızı yapın ve başlangıç öğelerini ekleyin
                 </p>
               </div>
@@ -425,8 +420,8 @@ export default function NewTodoListPage() {
             )}
 
             {/* Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Basic Info */}
                 <div className="space-y-6">
                   <Input
@@ -437,7 +432,7 @@ export default function NewTodoListPage() {
                     onChange={handleInputChange}
                     placeholder="Örnek: Haftalık Planlar, Market Alışverişi..."
                     required
-                    className="text-lg"
+                    className="text-base sm:text-lg"
                   />
                   
                   <div>
@@ -473,14 +468,14 @@ export default function NewTodoListPage() {
                   </div>
                   
                   {/* Quick Add Item */}
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2 sm:space-x-4">
                     <input
                       type="text"
                       value={quickAddItem}
                       onChange={(e) => setQuickAddItem(e.target.value)}
                       onKeyDown={handleQuickAddItem}
                       placeholder="Yeni öğe ekle (Enter tuşuna basarak ekle)"
-                      className="flex-1 mb-1 mt-2 ml-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="flex-1 mb-1 mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   
                   </div>
@@ -494,7 +489,7 @@ export default function NewTodoListPage() {
                             type="text"
                             value={item.title}
                             onChange={(e) => updateInitialItem(index, e.target.value)}
-                            className="flex-1 rounded-lg mt-1 mb-1 ml-1 border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="flex-1 rounded-lg mt-1 mb-1 border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="Görev girin..."
                           />
                           <PriorityDropdown
