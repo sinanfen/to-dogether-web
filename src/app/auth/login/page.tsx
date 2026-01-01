@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth'
 import { Input } from '@/components/ui'
-import { HeartIcon } from '@/components/ui/icons'
+import { UsersIcon } from '@/components/ui/icons'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  
+
   const { login, isLoading, error, user, isLoading: authLoading } = useAuth()
   const router = useRouter()
 
@@ -46,11 +46,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center justify-center space-x-2 mb-4 cursor-pointer hover:scale-105 transition-transform duration-200">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-              <HeartIcon className="h-6 w-6 text-white" />
+          <Link href="/" className="inline-flex items-center justify-center space-x-2 mb-4 cursor-pointer transition-transform duration-200">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl">
+              <UsersIcon className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">
               To-Dogether
             </h1>
           </Link>
@@ -68,7 +68,7 @@ export default function LoginPage() {
               placeholder="Kullanıcı adınızı girin"
               required
               autoComplete="username"
-              className="transition-all duration-300 focus:scale-105"
+              className="transition-all duration-300"
             />
             <Input
               label="Şifre"
@@ -79,7 +79,7 @@ export default function LoginPage() {
               required
               showPasswordToggle={true}
               autoComplete="current-password"
-              className="transition-all duration-300 focus:scale-105"
+              className="transition-all duration-300"
             />
           </div>
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl z-10"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl z-10"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

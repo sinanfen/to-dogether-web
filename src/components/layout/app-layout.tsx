@@ -19,7 +19,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -57,10 +57,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     const handleTouchEnd = (e: TouchEvent) => {
       endX = e.changedTouches[0].clientX
       endY = e.changedTouches[0].clientY
-      
+
       const deltaX = endX - startX
       const deltaY = Math.abs(endY - startY)
-      
+
       // Horizontal swipe with minimal vertical movement
       if (Math.abs(deltaX) > 100 && deltaY < 100) {
         if (deltaX > 0 && startX < 50 && !sidebarOpen) {
@@ -75,7 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
     document.addEventListener('touchstart', handleTouchStart)
     document.addEventListener('touchend', handleTouchEnd)
-    
+
     return () => {
       document.removeEventListener('touchstart', handleTouchStart)
       document.removeEventListener('touchend', handleTouchEnd)
@@ -95,17 +95,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     <div className="flex h-screen bg-gray-50 safe-area-inset">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
-      
+
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* AppBar / Mobile header */}
-        <header className="lg:hidden sticky top-0 z-30 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 box-border overflow-x-hidden">
-          <div className="w-full max-w-screen-lg mx-auto px-4 py-3 flex items-center justify-between rounded-lg shadow-md">
+        <header className="lg:hidden sticky top-0 z-30 w-full bg-gradient-to-r from-purple-500 via-purple-600 to-red-500 box-border overflow-x-hidden shadow-md">
+          <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 h-14 sm:h-16">
             <button
               data-sidebar-toggle
               onClick={toggleSidebar}
-              className="p-3 rounded-xl hover:bg-white/10 active:bg-white/20 transition-colors touch-manipulation"
-              style={{ minWidth: '44px', minHeight: '44px' }}
+              className="p-2 sm:p-3 rounded-xl hover:bg-white/10 active:bg-white/20 transition-colors touch-manipulation flex-shrink-0"
+              style={{ minWidth: '40px', minHeight: '40px' }}
               aria-label="Toggle navigation menu"
             >
               <MenuIcon className="h-6 w-6 text-white" />
@@ -120,7 +120,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             {/* User avatar on mobile */}
             {user && (
-              <div 
+              <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold mr-2 border border-white/30"
                 style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
               >
@@ -132,7 +132,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Masaüstü AppBar */}
         <header className="hidden lg:flex items-center justify-between bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-30 backdrop-blur-sm bg-white/95">
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">
               To-Dogether
             </h1>
             {user?.partner && (
@@ -141,7 +141,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
           {/* User avatar on desktop */}
           {user && (
-            <div 
+            <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-semibold"
               style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
             >

@@ -225,6 +225,15 @@ export interface UpdateTodoItemRequest {
   order?: number
 }
 
+export interface ReorderItem {
+  itemId: number
+  newOrder: number
+}
+
+export interface ReorderTodoItemsRequest {
+  items: ReorderItem[]
+}
+
 export interface UpdateUserProfileRequest {
   username?: string
   colorCode?: string
@@ -235,7 +244,7 @@ export interface UpdateUserProfileRequest {
 // Enums
 export enum TodoItemStatus {
   PENDING = 'pending',
-  IN_PROGRESS = 'in_progress', 
+  IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled'
 }

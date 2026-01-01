@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppLayout } from '@/components/layout'
 import { Input, Button, PriorityDropdown } from '@/components/ui'
-import { 
-  ListIcon, 
-  PlusIcon, 
+import {
+  ListIcon,
+  PlusIcon,
   HomeIcon,
   ShareIcon,
-  HeartIcon,
+  UsersIcon,
   TargetIcon
 } from '@/components/ui/icons'
 import Link from 'next/link'
@@ -35,7 +35,7 @@ const templates: TodoListTemplate[] = [
     color: '#10B981',
     items: [
       'Bulaşık yıkama',
-      'Çamaşır yıkama ve kurutma', 
+      'Çamaşır yıkama ve kurutma',
       'Evi süpürme ve silme',
       'Banyo temizliği',
       'Mutfak temizliği',
@@ -62,7 +62,7 @@ const templates: TodoListTemplate[] = [
     name: 'Tatil Planlaması',
     description: 'Tatil hazırlıklarınızı birlikte yapın',
     icon: TargetIcon,
-    color: '#EC4899',
+    color: '#F97316',
     items: [
       'Otel rezervasyonu',
       'Uçak bileti alma',
@@ -91,7 +91,7 @@ const templates: TodoListTemplate[] = [
     id: 'date-planning',
     name: 'Randevu Planları',
     description: 'Romantik anlar için plan yapın',
-    icon: HeartIcon,
+    icon: UsersIcon,
     color: '#8B5CF6',
     items: [
       'Restoran rezervasyonu',
@@ -120,17 +120,17 @@ const templates: TodoListTemplate[] = [
 export default function NewTodoListPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  
+
   const [currentStep, setCurrentStep] = useState<'template' | 'form'>('template')
   const [selectedTemplate, setSelectedTemplate] = useState<TodoListTemplate | null>(null)
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     colorCode: '#8B5CF6',
     isShared: true
   })
-  
+
   const [initialItems, setInitialItems] = useState<{ title: string; priority: 'low' | 'medium' | 'high' }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -154,7 +154,7 @@ export default function NewTodoListPage() {
 
   const colorOptions = [
     { name: 'Mor', value: '#8B5CF6' },
-    { name: 'Pembe', value: '#EC4899' },
+    { name: 'Turuncu', value: '#F97316' },
     { name: 'Mavi', value: '#3B82F6' },
     { name: 'Yeşil', value: '#10B981' },
     { name: 'Turuncu', value: '#F59E0B' },
@@ -191,7 +191,7 @@ export default function NewTodoListPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.title.trim()) {
       setError('Lütfen bir liste başlığı girin')
       return
@@ -213,7 +213,7 @@ export default function NewTodoListPage() {
 
       // Step 2: Add initial items if any
       if (initialItems.length > 0) {
-        
+
         // Priority mapping for items
         const priorityToSeverity = (priority: string): number => {
           switch (priority) {
@@ -227,7 +227,7 @@ export default function NewTodoListPage() {
         // Add each initial item
         const itemPromises = initialItems
           .filter(item => item.title.trim()) // Filter out empty items
-          .map((item) => 
+          .map((item) =>
             api.createTodoItem(newList.id, {
               title: item.title.trim(),
               severity: priorityToSeverity(item.priority) // Use list priority as default for items
@@ -236,7 +236,7 @@ export default function NewTodoListPage() {
 
         await Promise.all(itemPromises)
       }
-      
+
       // Redirect to the new list
       router.push(`/todo-lists/${newList.id}`)
     } catch (err) {
@@ -287,9 +287,9 @@ export default function NewTodoListPage() {
 
   return (
     <AppLayout>
-      <div className="w-full space-y-6 px-2 sm:px-1">
+      <div className="w-full space-y-6 max-w-5xl mx-auto px-4 sm:px-0">
         {/* Progress indicator */}
-        <div className="flex items-center justify-center space-x-4 mb-8">
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4 mb-6 sm:mb-8">
           <div className={`flex items-center space-x-2 ${currentStep === 'template' ? 'text-purple-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'template' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}>
               1
@@ -311,7 +311,7 @@ export default function NewTodoListPage() {
           <div className="space-y-6">
             {/* Header */}
             <div className="text-center px-2">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <PlusIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Yeni Todo Listesi Oluşturun</h1>
@@ -320,15 +320,15 @@ export default function NewTodoListPage() {
               </p>
             </div>
 
-       
+
 
             {/* Templates */}
             <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 px-1">
                 📋 Hızlı Başlatma Şablonları
               </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
                 {templates.map((template) => {
                   const Icon = template.icon
                   return (
@@ -338,13 +338,13 @@ export default function NewTodoListPage() {
                       className="text-left p-3 sm:p-4 rounded-xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-md transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
                     >
                       <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
-                        <div 
+                        <div
                           className="p-1.5 sm:p-2 rounded-lg"
                           style={{ backgroundColor: template.color + '20' }}
                         >
                           <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                         </div>
-                        <div 
+                        <div
                           className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full"
                           style={{ backgroundColor: template.color }}
                         />
@@ -371,16 +371,16 @@ export default function NewTodoListPage() {
                   onClick={handleCustomCreate}
                   className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group"
                 >
-                  <div className="flex items-center justify-center space-x-3">
+                  <div className="flex items-center justify-center space-x-3 text-left">
                     <div className="p-2 bg-gray-100 group-hover:bg-purple-100 rounded-lg transition-colors">
                       <PlusIcon className="h-5 w-5 text-gray-600 group-hover:text-purple-600" />
                     </div>
-                    <div className="text-left">
+                    <div>
                       <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
                         Tamamen Özelleştirin
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Boş bir listeyle başlayın ve her şeyi özelleştirin
+                        Boş bir listeyle başladın ve her şeyi özelleştirin
                       </p>
                     </div>
                   </div>
@@ -393,12 +393,12 @@ export default function NewTodoListPage() {
         {currentStep === 'form' && (
           <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between flex-wrap gap-2 px-2">
-              <div>
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between flex-wrap gap-2 px-1 sm:px-2 min-w-0">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 break-words">
                   {selectedTemplate ? `Özelleştirin ${selectedTemplate.name}` : 'Özelleştirilmiş Liste Oluşturun'}
                 </h1>
-                <p className="text-sm sm:text-base text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600 break-words">
                   Liste ayarlarınızı yapın ve başlangıç öğelerini ekleyin
                 </p>
               </div>
@@ -406,7 +406,7 @@ export default function NewTodoListPage() {
                 variant="outline"
                 onClick={() => setCurrentStep('template')}
                 size="sm"
-                className="w-full mt-2 sm:mt-0 sm:w-auto"
+                className="w-full mt-2 sm:mt-0 sm:w-auto h-9 text-xs"
               >
                 ← Şablonlara Dön
               </Button>
@@ -434,7 +434,7 @@ export default function NewTodoListPage() {
                     required
                     className="text-base sm:text-lg"
                   />
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
                       Açıklama (Opsiyonel)
@@ -448,8 +448,6 @@ export default function NewTodoListPage() {
                       className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
                     />
                   </div>
-
-
                 </div>
 
                 {/* Initial Items Section */}
@@ -466,46 +464,51 @@ export default function NewTodoListPage() {
                       + Öğe Ekle
                     </button>
                   </div>
-                  
+
                   {/* Quick Add Item */}
-                  <div className="flex items-center space-x-2 sm:space-x-4">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={quickAddItem}
                       onChange={(e) => setQuickAddItem(e.target.value)}
                       onKeyDown={handleQuickAddItem}
                       placeholder="Yeni öğe ekle (Enter tuşuna basarak ekle)"
-                      className="flex-1 mb-1 mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full mb-1 mt-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
-                  
                   </div>
 
                   {/* Items List */}
                   {initialItems.length > 0 && (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {initialItems.map((item, index) => (
-                        <div key={index} className="flex items-center space-x-2 w-full">
-                          <input
-                            type="text"
-                            value={item.title}
-                            onChange={(e) => updateInitialItem(index, e.target.value)}
-                            className="flex-1 rounded-lg mt-1 mb-1 border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            placeholder="Görev girin..."
-                          />
-                          <PriorityDropdown
-                            value={item.priority}
-                            onChange={(priority) => updateInitialItemPriority(index, priority)}
-                            className="flex-shrink-0"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeInitialItem(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                    <div className="bg-gray-50/50 border border-gray-200 rounded-xl p-3 sm:p-3 overflow-hidden">
+                      <div className="space-y-1.5 max-h-64 overflow-y-auto pr-0.5 sm:pr-1">
+                        {initialItems.map((item, index) => (
+                          <div key={index} className="flex items-center gap-1.5 sm:gap-2">
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => updateInitialItem(index, e.target.value)}
+                              className="flex-1 min-w-0 rounded-lg border border-gray-300 px-2 sm:px-3 py-1 sm:py-1.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="Görev girin..."
+                            />
+                            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                              <PriorityDropdown
+                                value={item.priority}
+                                onChange={(priority) => updateInitialItemPriority(index, priority)}
+                                className="w-auto h-7 sm:h-8"
+                                compact={true}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeInitialItem(index)}
+                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                                title="Sil"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -515,23 +518,22 @@ export default function NewTodoListPage() {
                   <label className="block text-sm font-medium text-gray-900 mb-3">
                     Liste Rengi
                   </label>
-                  <div className="grid grid-cols-4 lg:grid-cols-8 gap-3">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
                     {colorOptions.map((color) => (
                       <button
                         key={color.value}
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, colorCode: color.value }))}
-                        className={`relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                          formData.colorCode === color.value
-                            ? 'border-gray-400 shadow-lg'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className={`relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${formData.colorCode === color.value
+                          ? 'border-gray-400 shadow-lg'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
                       >
-                        <div 
+                        <div
                           className="w-full h-6 rounded-lg"
                           style={{ backgroundColor: color.value }}
                         />
-                        <p className="text-xs font-medium text-gray-700 mt-1 text-center">
+                        <p className="text-[10px] sm:text-xs font-medium text-gray-700 mt-1 text-center truncate px-0.5">
                           {color.name}
                         </p>
                         {formData.colorCode === color.value && (
@@ -557,14 +559,12 @@ export default function NewTodoListPage() {
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, isShared: !prev.isShared }))}
-                      className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                        formData.isShared ? 'bg-purple-500' : 'bg-gray-300'
-                      }`}
-                    >
-                      <div 
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
-                          formData.isShared ? 'translate-x-6' : 'translate-x-0'
+                      className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${formData.isShared ? 'bg-purple-500' : 'bg-gray-300'
                         }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${formData.isShared ? 'translate-x-6' : 'translate-x-0'
+                          }`}
                       />
                     </button>
                   </div>
@@ -574,18 +574,18 @@ export default function NewTodoListPage() {
                 <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
                   <h3 className="text-sm font-medium text-gray-900 mb-3">Önizleme</h3>
                   <div className="bg-white border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="w-4 h-4 rounded-full"
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <div
+                          className="w-4 h-4 rounded-full flex-shrink-0"
                           style={{ backgroundColor: formData.colorCode }}
                         />
-                        <h4 className="font-semibold text-gray-900">
+                        <h4 className="font-semibold text-gray-900 truncate">
                           {formData.title || 'Liste Başlığı'}
                         </h4>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {formData.isShared && user.partner && (
+                        {formData.isShared && user?.partner && (
                           <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
                             Paylaşılmış
                           </span>
@@ -604,30 +604,30 @@ export default function NewTodoListPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 pt-6">
+                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-100">
                   <Button
                     variant="outline"
                     onClick={() => setCurrentStep('template')}
-                    className="sm:hidden w-full"
-                    size="sm"
+                    className="sm:hidden w-full order-3"
+                    size="md"
                     type="button"
                   >
                     ← Şablonlara Dön
                   </Button>
-                  <Link href="/todo-lists" className="flex-1">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                  <Link href="/todo-lists" className="w-full sm:flex-1 order-2 sm:order-1">
+                    <Button
+                      variant="outline"
+                      size="md"
                       className="w-full"
                       type="button"
                     >
                       İptal Et
                     </Button>
                   </Link>
-                  <Button 
-                    variant="gradient" 
-                    size="sm" 
-                    className="flex-1 flex items-center justify-center space-x-2"
+                  <Button
+                    variant="gradient"
+                    size="md"
+                    className="w-full sm:flex-1 flex items-center justify-center space-x-2 order-1 sm:order-2"
                     type="submit"
                     disabled={!formData.title.trim() || isLoading}
                   >

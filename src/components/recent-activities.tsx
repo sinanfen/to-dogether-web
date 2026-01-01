@@ -82,7 +82,7 @@ export function RecentActivities({ limit = 10, className = '' }: RecentActivitie
         return 'from-blue-50 to-indigo-50 border-blue-200/50'
       case ActivityType.Deleted:
       case ActivityType.ItemDeleted:
-        return 'from-red-50 to-pink-50 border-red-200/50'
+        return 'from-red-50 to-orange-50 border-red-200/50'
       case ActivityType.Completed:
       case ActivityType.ItemCompleted:
         return 'from-emerald-50 to-green-50 border-emerald-200/50'

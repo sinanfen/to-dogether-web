@@ -3,13 +3,12 @@
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth'
-import { 
-  HomeIcon, 
-  ListIcon, 
-  UsersIcon, 
-  SettingsIcon, 
-  LogoutIcon, 
-  HeartIcon,
+import {
+  HomeIcon,
+  ListIcon,
+  UsersIcon,
+  SettingsIcon,
+  LogoutIcon,
   XMarkIcon
 } from '@/components/ui/icons'
 import { clsx } from 'clsx'
@@ -38,7 +37,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -47,9 +46,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const navItems: NavItem[] = [
     { href: '/dashboard', label: 'Ana Sayfa', icon: HomeIcon },
     { href: '/todo-lists', label: 'Todo Listeleri', icon: ListIcon },
-    { 
-      href: '/partner', 
-      label: 'Ortak', 
+    {
+      href: '/partner',
+      label: 'Ortak',
       icon: UsersIcon,
       badge: user?.partner ? '✓' : '!'
     },
@@ -58,7 +57,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
   const handleLogout = async () => {
     if (isLoggingOut) return
-    
+
     try {
       setIsLoggingOut(true)
       await logout()
@@ -81,15 +80,15 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     <>
       {/* Mobile backdrop with blur */}
       {isOpen && isMobile && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm lg:hidden z-40 transition-opacity duration-300"
           onClick={onToggle}
           style={{ WebkitTapHighlightColor: 'transparent' }}
         />
       )}
-      
+
       {/* Sidebar */}
-      <div 
+      <div
         data-sidebar
         className={clsx(
           'fixed left-0 top-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-out z-50',
@@ -97,20 +96,20 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           'border-r border-gray-200',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
-        style={{ 
+        style={{
           maxWidth: '85vw',
           paddingBottom: 'env(safe-area-inset-bottom)',
           paddingTop: 'env(safe-area-inset-top)'
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-orange-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl shadow-lg">
-              <HeartIcon className="h-6 w-6 text-white" />
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl shadow-lg">
+              <UsersIcon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-orange-600 bg-clip-text text-transparent">
                 To-Dogether
               </h1>
               {user && (
@@ -118,7 +117,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               )}
             </div>
           </div>
-          
+
           {/* Mobile close button */}
           <button
             onClick={onToggle}
@@ -134,7 +133,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {user && (
           <div className="p-4 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center space-x-3 p-3 rounded-xl bg-white shadow-sm">
-              <div 
+              <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-md"
                 style={{ backgroundColor: user.colorCode || '#8B5CF6' }}
               >
@@ -162,7 +161,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
-              
+
               return (
                 <li key={item.href}>
                   <Link
@@ -171,8 +170,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     className={clsx(
                       'flex items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 group touch-manipulation',
                       'hover:scale-[1.02] active:scale-[0.98]',
-                      isActive 
-                        ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 shadow-lg border border-purple-200' 
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-100 to-orange-100 text-purple-700 shadow-lg border border-purple-200'
                         : 'text-gray-700 hover:bg-gray-100 hover:text-purple-600 hover:shadow-md'
                     )}
                     style={{ minHeight: '56px' }}
@@ -184,12 +183,12 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                       )} />
                       <span className="font-medium text-base">{item.label}</span>
                     </div>
-                    
+
                     {item.badge && (
                       <div className={clsx(
                         'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                        item.badge === '✓' 
-                          ? 'bg-green-100 text-green-600' 
+                        item.badge === '✓'
+                          ? 'bg-green-100 text-green-600'
                           : 'bg-orange-100 text-orange-600'
                       )}>
                         {item.badge}
@@ -210,7 +209,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <Link
                 href="/todo-lists/new"
                 onClick={handleNavClick}
-                className="flex items-center space-x-3 px-4 py-3 rounded-xl text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] touch-manipulation"
+                className="flex items-center space-x-3 px-4 py-3 rounded-xl text-white bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] touch-manipulation"
                 style={{ minHeight: '48px' }}
               >
                 <ListIcon className="h-5 w-5" />

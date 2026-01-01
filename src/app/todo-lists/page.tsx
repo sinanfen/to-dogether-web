@@ -214,10 +214,10 @@ export default function TodoListsPage() {
                 <Button 
                   variant="gradient" 
                   size="sm" 
-                  className="w-full px-3 py-1.5 h-10 relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-400 hover:via-pink-400 hover:to-red-400"
+                  className="w-full px-3 py-1.5 h-10 relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-purple-600 to-red-500 hover:from-purple-400 hover:via-purple-400 hover:to-red-400"
                 >
                   {/* Inner Background */}
-                  <div className="absolute inset-[1px] bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg group-hover:from-purple-400 group-hover:via-pink-400 group-hover:to-red-400 transition-all duration-500"></div>
+                  <div className="absolute inset-[1px] bg-gradient-to-r from-purple-500 via-purple-600 to-red-500 rounded-lg group-hover:from-purple-400 group-hover:via-purple-400 group-hover:to-red-400 transition-all duration-500"></div>
                   
                   {/* Content */}
                   <div className="relative z-10 flex items-center space-x-2">
@@ -272,7 +272,7 @@ export default function TodoListsPage() {
               onClick={() => setActiveTab('my')}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
                 activeTab === 'my'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-purple-500 to-orange-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -283,7 +283,7 @@ export default function TodoListsPage() {
               onClick={() => setActiveTab('partner')}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
                 activeTab === 'partner'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-purple-500 to-orange-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
               disabled={!user.partner}

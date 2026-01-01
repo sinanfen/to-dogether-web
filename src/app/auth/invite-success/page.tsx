@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
-import { HeartIcon, CopyIcon, CheckIcon } from '@/components/ui/icons'
+import { UsersIcon, CopyIcon, CheckIcon } from '@/components/ui/icons'
 
 function InviteSuccessContent() {
   const router = useRouter()
@@ -40,8 +40,8 @@ function InviteSuccessContent() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-              <HeartIcon className="h-8 w-8 text-white" />
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl">
+              <UsersIcon className="h-8 w-8 text-white" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">To-Dogether&apos;a Hoş Geldiniz!</h1>

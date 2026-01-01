@@ -227,7 +227,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
                     }
                   }}
                   disabled={!!hexError || !isValidHex(customColor)}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
+                  className="w-full bg-gradient-to-r from-purple-500 to-orange-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-purple-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
                 >
                   Özel Rengi Uygula
                 </button>

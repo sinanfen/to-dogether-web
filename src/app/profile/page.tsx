@@ -286,7 +286,7 @@ export default function ProfilePage() {
             </h3>
             
             {user.partner ? (
-              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-orange-50 rounded-lg">
                 <div 
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md"
                   style={{ backgroundColor: user.partner.colorCode }}
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                 onClick={showInviteCode}
                 disabled={modalLoading}
                 size="sm"
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                className="w-full bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white"
               >
                 {modalLoading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -353,7 +353,7 @@ export default function ProfilePage() {
           </div>
           
           {modalToken && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+            <div className="bg-gradient-to-r from-purple-50 to-orange-50 border-2 border-purple-200 rounded-lg p-6">
               <div className="text-center space-y-4">
                 <code className="block text-xl font-mono text-purple-700 break-all bg-white p-4 rounded-lg shadow-inner">
                   {modalToken}

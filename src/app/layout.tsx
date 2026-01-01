@@ -8,7 +8,7 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: 'swap',
-  fallback: ['system-ui', 'arial'],
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
   preload: true,
 })
 
@@ -125,23 +125,23 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#8B5CF6" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#8B5CF6" />
-        
+
         {/* Icons */}
         <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
         <link rel="apple-touch-icon" href="/icons/icon-180.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
         <link rel="mask-icon" href="/icons/icon.svg" color="#8B5CF6" />
-        
+
         {/* Manifest */}
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* Splash screens for iOS */}
         <link rel="apple-touch-startup-image" href="/icons/icon-512.png" />
-        
+
         {/* Prevent zoom on input focus */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-        
+
         {/* Mobile optimizations */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -161,3 +161,4 @@ export default function RootLayout({
     </html>
   )
 }
+

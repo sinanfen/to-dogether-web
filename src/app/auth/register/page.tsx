@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth'
 import { Input, ColorPicker } from '@/components/ui'
-import { HeartIcon } from '@/components/ui/icons'
+import { UsersIcon } from '@/components/ui/icons'
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const [colorCode, setColorCode] = useState('#8B5CF6') // Purple default
   const [hasInviteToken, setHasInviteToken] = useState(false)
   const [inviteToken, setInviteToken] = useState('')
-  
+
   const { register, isLoading, error, user, isLoading: authLoading } = useAuth()
   const router = useRouter()
 
@@ -38,32 +38,32 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await register({ 
-      username, 
-      password, 
+    await register({
+      username,
+      password,
       colorCode,
-      inviteToken: hasInviteToken ? inviteToken : undefined 
+      inviteToken: hasInviteToken ? inviteToken : undefined
     })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg w-full space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-lg w-full space-y-6 sm:space-y-8">
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center justify-center space-x-2 mb-4 cursor-pointer hover:scale-105 transition-transform duration-200">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-              <HeartIcon className="h-6 w-6 text-white" />
+          <Link href="/" className="inline-flex items-center justify-center space-x-2 mb-3 sm:mb-4 cursor-pointer transition-transform duration-200">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl">
+              <UsersIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
               To-Dogether
             </h1>
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900">To-Dogether&apos;a Katıl</h2>
-          <p className="mt-2 text-gray-600">Hesabınızı oluşturun ve birlikte planlamaya başlayın</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">To-Dogether&apos;a Katıl</h2>
+          <p className="mt-2 text-sm sm:text-base text-gray-600">Hesabınızı oluşturun ve birlikte planlamaya başlayın</p>
         </div>
 
-        <form className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-lg" onSubmit={handleSubmit}>
-          <div className="space-y-6">
+        <form className="mt-6 sm:mt-8 space-y-5 sm:space-y-6 bg-white p-4 sm:p-8 rounded-2xl shadow-lg" onSubmit={handleSubmit}>
+          <div className="space-y-4 sm:space-y-6">
             <Input
               label="Kullanıcı Adı"
               type="text"
@@ -72,9 +72,9 @@ export default function RegisterPage() {
               placeholder="Bir kullanıcı adı seçin"
               required
               autoComplete="username"
-              className="transition-all duration-300 focus:scale-105"
+              className="transition-all duration-300"
             />
-            
+
             <Input
               label="Şifre"
               type="password"
@@ -84,7 +84,7 @@ export default function RegisterPage() {
               required
               showPasswordToggle={true}
               autoComplete="new-password"
-              className="transition-all duration-300 focus:scale-105"
+              className="transition-all duration-300"
             />
 
             <ColorPicker
@@ -95,10 +95,10 @@ export default function RegisterPage() {
             />
 
             {/* Invite Token Section */}
-            <div className="border-t border-gray-200 pt-6">
-              <div className="mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
+            <div className="border-t border-gray-200 pt-4 sm:pt-6">
+              <div className="mb-3 sm:mb-4">
+                <div className="flex items-start sm:items-center space-x-3">
+                  <div className="relative flex-shrink-0 mt-0.5 sm:mt-0">
                     <input
                       type="checkbox"
                       id="hasInviteToken"
@@ -106,13 +106,12 @@ export default function RegisterPage() {
                       onChange={(e) => setHasInviteToken(e.target.checked)}
                       className="sr-only"
                     />
-                    <label 
-                      htmlFor="hasInviteToken" 
-                      className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                        hasInviteToken 
-                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 border-purple-500 shadow-lg' 
-                          : 'bg-white border-gray-300 hover:border-purple-400'
-                      }`}
+                    <label
+                      htmlFor="hasInviteToken"
+                      className={`flex items-center justify-center w-6 h-6 border-2 rounded-lg cursor-pointer transition-all duration-200 ${hasInviteToken
+                        ? 'bg-gradient-to-r from-purple-500 to-orange-500 border-purple-500 shadow-lg'
+                        : 'bg-white border-gray-300 hover:border-purple-400'
+                        }`}
                     >
                       {hasInviteToken && (
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -121,36 +120,36 @@ export default function RegisterPage() {
                       )}
                     </label>
                   </div>
-                  <label htmlFor="hasInviteToken" className="text-sm font-medium text-gray-700 cursor-pointer">
-                    Partnerinizden bir davet kodunuz var mı?
+                  <label htmlFor="hasInviteToken" className="text-sm font-medium text-gray-700 cursor-pointer leading-tight">
+                    Takım arkadaşınızdan bir davet kodunuz var mı?
                   </label>
                 </div>
                 <p className="text-xs text-gray-500 mt-1 ml-9">
-                  Partnerinizden bir davet kodu aldıysanız işaretleyin
+                  Bir davet kodu aldıysanız işaretleyin
                 </p>
               </div>
-              
+
               {hasInviteToken && (
-                <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <Input
                     label="Davet Kodu"
                     type="text"
                     value={inviteToken}
                     onChange={(e) => setInviteToken(e.target.value)}
-                    placeholder="Partnerinizin davet kodunu girin"
-                    className="transition-all duration-300 focus:scale-105"
+                    placeholder="Davet kodunu girin"
+                    className="transition-all duration-300"
                   />
                   <p className="mt-2 text-xs text-purple-600">
-                    💡 Partneriniz hesabını oluşturduktan sonra bu kodu sizinle paylaşmalı
+                    💡 Takım arkadaşınız hesabını oluşturduktan sonra bu kodu sizinle paylaşmalı
                   </p>
                 </div>
               )}
-              
+
               {!hasInviteToken && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    <strong>Yeni bir çift mi oluşturuyorsunuz?</strong><br />
-                    Kayıt olduktan sonra partnerinizle paylaşmak için bir davet kodu alacaksınız!
+                    <strong>Yeni bir takım mı oluşturuyorsunuz?</strong><br />
+                    Kayıt olduktan sonra arkadaşlarınızla paylaşmak için bir davet kodu alacaksınız!
                   </p>
                 </div>
               )}
@@ -167,7 +166,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl z-10"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300 shadow-lg hover:shadow-xl min-h-[48px]"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

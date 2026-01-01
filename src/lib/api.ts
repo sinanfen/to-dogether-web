@@ -1,7 +1,7 @@
-import type { 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
   User,
   TodoList,
   TodoItem,
@@ -9,6 +9,7 @@ import type {
   UpdateTodoListRequest,
   CreateTodoItemRequest,
   UpdateTodoItemRequest,
+  ReorderTodoItemsRequest,
   UpdateUserProfileRequest,
   DashboardStats,
   PartnerOverview,
@@ -22,7 +23,7 @@ const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL
   }
-  
+
   // Browser'da çalışıyorsa ve localhost'taysa development API'sini kullan
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname
@@ -30,7 +31,7 @@ const getApiBaseUrl = () => {
       return 'https://localhost:54696'
     }
   }
-  
+
   // Production API'sini kullan
   return 'https://to-dogether-api.sinanfen.me'
 }
@@ -114,7 +115,7 @@ class ApiClient {
           } else if (errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch {}
+        } catch { }
         throw new Error(errorMessage);
       }
       const contentType = response.headers.get('content-type');
@@ -136,12 +137,12 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     })
-    
+
     this.setToken(response.accessToken)
     if (typeof window !== 'undefined') {
       localStorage.setItem('refreshToken', response.refreshToken)
     }
-    
+
     return response
   }
 
@@ -150,12 +151,12 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     })
-    
+
     this.setToken(response.accessToken)
     if (typeof window !== 'undefined') {
       localStorage.setItem('refreshToken', response.refreshToken)
     }
-    
+
     return response
   }
 
@@ -172,7 +173,7 @@ class ApiClient {
 
   async logout(): Promise<void> {
     const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null
-    
+
     if (refreshToken) {
       try {
         await this.request('/auth/logout', {
@@ -183,7 +184,7 @@ class ApiClient {
         // Logout API call failed, but we'll still clear the token
       }
     }
-    
+
     this.clearToken()
   }
 
@@ -234,7 +235,7 @@ class ApiClient {
       this.getTodoLists(),
       this.getPartnerTodoLists()
     ])
-    
+
     const allLists = [...myLists, ...partnerLists]
     return allLists.find(list => list.id === id) || null
   }
@@ -289,19 +290,26 @@ class ApiClient {
     // önce item'ları getirip o item'ı bulup status'unu değiştiriyoruz
     const items = await this.getTodoItems(listId)
     const item = items.find(i => i.id === itemId)
-    
+
     if (!item) {
       throw new Error('Todo item not found')
     }
-    
+
     const newStatus = item.status === 0 ? 1 : 0 // 0: Pending, 1: Done
-    
+
     return this.request<TodoItem>(`/todolists/${listId}/items/${itemId}`, {
       method: 'PUT',
       body: JSON.stringify({
         ...item,
         status: newStatus
       }),
+    })
+  }
+
+  async reorderTodoItems(listId: number, data: ReorderTodoItemsRequest): Promise<TodoItem[]> {
+    return this.request<TodoItem[]>(`/todolists/${listId}/items/reorder`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     })
   }
 }

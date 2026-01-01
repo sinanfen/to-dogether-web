@@ -94,7 +94,7 @@ export function PWAInstallPrompt() {
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 animate-slide-up-mobile">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl flex items-center justify-center">
               <DownloadIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -136,7 +136,7 @@ export function PWAInstallPrompt() {
           </Button>
           <Button
             onClick={handleInstallClick}
-            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="flex-1 bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600"
           >
             <DownloadIcon className="h-4 w-4 mr-2" />
             Kur

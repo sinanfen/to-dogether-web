@@ -8,34 +8,34 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          'var(--font-inter)',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'system-ui',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
+      },
       colors: {
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          800: '#6b21a8',
+          900: '#581c87',
+          950: '#3b0764',
         },
         secondary: {
-          50: '#fdf4ff',
-          100: '#fae8ff',
-          200: '#f5d0fe',
-          300: '#f0abfc',
-          400: '#e879f9',
-          500: '#d946ef',
-          600: '#c026d3',
-          700: '#a21caf',
-          800: '#86198f',
-          900: '#701a75',
-          950: '#4a044e',
-        },
-        accent: {
           50: '#fff7ed',
           100: '#ffedd5',
           200: '#fed7aa',
@@ -47,15 +47,28 @@ const config: Config = {
           800: '#9a3412',
           900: '#7c2d12',
           950: '#431407',
+        },
+        accent: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          800: '#6b21a8',
+          900: '#581c87',
+          950: '#3b0764',
         }
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'gradient-secondary': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'gradient-purple': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        'gradient-ocean': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'gradient-sunset': 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #a855f7 0%, #f97316 100%)',
+        'gradient-secondary': 'linear-gradient(135deg, #9333ea 0%, #ea580c 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #c084fc 0%, #fb923c 100%)',
+        'gradient-purple': 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)',
+        'gradient-orange': 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+        'gradient-sunset': 'linear-gradient(135deg, #a855f7 0%, #f97316 100%)',
       },
       animation: {
         'fade-in': 'fade-in 0.3s ease-out',
@@ -97,8 +110,8 @@ const config: Config = {
           '100%': { '--angle': '360deg' },
         },
         'pulse-glow': {
-          '0%': { boxShadow: '0 0 5px rgb(168 85 247 / 0.4), 0 0 20px rgb(168 85 247 / 0.2), 0 0 35px rgb(168 85 247 / 0.1)' },
-          '100%': { boxShadow: '0 0 10px rgb(168 85 247 / 0.6), 0 0 30px rgb(168 85 247 / 0.4), 0 0 50px rgb(168 85 247 / 0.2)' },
+          '0%': { boxShadow: '0 0 5px rgb(168 85 247 / 0.4), 0 0 20px rgb(249 115 22 / 0.2), 0 0 35px rgb(168 85 247 / 0.1)' },
+          '100%': { boxShadow: '0 0 10px rgb(168 85 247 / 0.6), 0 0 30px rgb(249 115 22 / 0.4), 0 0 50px rgb(168 85 247 / 0.2)' },
         },
         'fade-in': {
           '0%': { opacity: '0', transform: 'translateY(-10px)' },
@@ -108,7 +121,7 @@ const config: Config = {
     },
   },
   plugins: [
-    function({ addVariant }: { addVariant: (name: string, selector: string) => void }) {
+    function ({ addVariant }: { addVariant: (name: string, selector: string) => void }) {
       addVariant('autofill', '&:-webkit-autofill')
       addVariant('autofill-hover', '&:-webkit-autofill:hover')
       addVariant('autofill-focus', '&:-webkit-autofill:focus')

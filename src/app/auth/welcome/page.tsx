@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
-import { HeartIcon, CopyIcon, CheckIcon, SparklesIcon, UsersIcon, GiftIcon } from '@/components/ui/icons'
+import { CopyIcon, CheckIcon, SparklesIcon, UsersIcon, GiftIcon } from '@/components/ui/icons'
 import { useAuth } from '@/contexts/auth'
 
 function WelcomeContent() {
@@ -50,8 +50,8 @@ function WelcomeContent() {
       <div className="max-w-2xl w-full space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-              <HeartIcon className="h-8 w-8 text-white" />
+            <div className="p-3 bg-gradient-to-r from-purple-500 to-orange-500 rounded-xl">
+              <UsersIcon className="h-8 w-8 text-white" />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -78,7 +78,7 @@ function WelcomeContent() {
 
           {/* Invite Token Section */}
           <div className="space-y-6">
-            <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl">
+            <div className="p-6 bg-gradient-to-r from-purple-50 to-orange-50 border-2 border-purple-200 rounded-xl">
               <div className="flex items-center space-x-3 mb-4">
                 <GiftIcon className="h-6 w-6 text-purple-600" />
                 <label className="block text-lg font-semibold text-purple-800">
@@ -91,7 +91,7 @@ function WelcomeContent() {
                 </code>
                 <button
                   onClick={copyToClipboard}
-                  className="flex-shrink-0 p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-105 shadow-lg"
+                  className="flex-shrink-0 p-4 bg-gradient-to-r from-purple-600 to-orange-600 text-white rounded-lg hover:from-purple-700 hover:to-orange-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-lg"
                   title={copied ? 'Kopyalandı!' : 'Kopyala'}
                 >
                   {copied ? (
@@ -170,7 +170,7 @@ function WelcomeContent() {
                 Panele Devam Et
               </Button>
             </Link>
-            
+
             <div className="text-center">
               <p className="text-sm text-gray-500">
                 Merak etmeyin, bu kodu daha sonra profil ayarlarınızda da bulabilirsiniz
