@@ -45,7 +45,7 @@ export default function TodoListsPage() {
       setError(null)
       // Load user's own lists
       const userLists = await api.getTodoLists()
-      
+
       // Enhance user lists with real item counts (like dashboard)
       const enhancedUserLists = await Promise.all(
         userLists.map(async (list) => {
@@ -55,7 +55,7 @@ export default function TodoListsPage() {
             const completedItems = items.filter(item => item.status === 1).length
             const totalItems = items.length
             const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
-            
+
             return {
               ...list,
               colorCode: list.colorCode,
@@ -80,14 +80,14 @@ export default function TodoListsPage() {
           }
         })
       )
-      
+
       setMyLists(enhancedUserLists)
 
       // Load partner's lists if partner exists
       if (user?.partner) {
         try {
           const partnerTodoLists = await api.getPartnerTodoLists()
-          
+
           // Enhance partner lists with real item counts (like dashboard)
           const enhancedPartnerLists = await Promise.all(
             partnerTodoLists.map(async (list) => {
@@ -97,7 +97,7 @@ export default function TodoListsPage() {
                 const completedItems = items.filter(item => item.status === 1).length
                 const totalItems = items.length
                 const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
-                
+
                 return {
                   ...list,
                   colorCode: list.colorCode,
@@ -122,7 +122,7 @@ export default function TodoListsPage() {
               }
             })
           )
-          
+
           setPartnerLists(enhancedPartnerLists)
         } catch (partnerError) {
           console.error('❌ Partner listeleri yüklenemedi:', partnerError)
@@ -154,7 +154,7 @@ export default function TodoListsPage() {
     try {
       setDeletingListId(deleteDialog.list.id)
       await api.deleteTodoList(deleteDialog.list.id)
-      
+
       // Close dialog and refresh the lists
       closeDeleteDialog()
       await loadTodoLists()
@@ -191,59 +191,21 @@ export default function TodoListsPage() {
     <AppLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Yapılacaklar Listeleri</h1>
-            <p className="text-gray-600 mt-2">
-              Görevlerinizi organize edin ve partnerinizle iş birliği yapın
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Listelerim</h1>
+            <p className="text-gray-500 text-xs sm:text-sm mt-1">
+              Görevlerinizi organize edin
             </p>
           </div>
-          
-          <div className="mt-4 lg:mt-0">
-            <div className="relative group">
-              {/* Animated Border Background */}
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                   style={{
-                     background: 'conic-gradient(from var(--angle), transparent 70%, rgb(168 85 247) 80%, rgb(236 72 153) 85%, rgb(239 68 68) 90%, transparent 95%)',
-                     animation: 'border-spin 2s linear infinite',
-                     padding: '2px'
-                   }}>
-              </div>
-              
-              <Link href="/todo-lists/new">
-                <Button 
-                  variant="gradient" 
-                  size="sm" 
-                  className="w-full px-3 py-1.5 h-10 relative flex items-center space-x-2 overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-purple-400/50 transition-all duration-500 bg-gradient-to-r from-purple-500 via-purple-600 to-red-500 hover:from-purple-400 hover:via-purple-400 hover:to-red-400"
-                >
-                  {/* Inner Background */}
-                  <div className="absolute inset-[1px] bg-gradient-to-r from-purple-500 via-purple-600 to-red-500 rounded-lg group-hover:from-purple-400 group-hover:via-purple-400 group-hover:to-red-400 transition-all duration-500"></div>
-                  
-                  {/* Content */}
-                  <div className="relative z-10 flex items-center space-x-2">
-                    <div className="relative">
-                      <PlusIcon className="h-5 w-5 transition-all duration-500 group-hover:scale-110 group-hover:rotate-90" />
-                      {/* Plus icon glow effect */}
-                      <div className="absolute inset-0 h-5 w-5 opacity-0 group-hover:opacity-50 transition-opacity duration-500">
-                        <PlusIcon className="h-5 w-5 text-white/60 scale-150 animate-ping" />
-                      </div>
-                    </div>
-                    <span className="font-semibold tracking-wide">Yeni Liste Oluştur</span>
-                    
-                    {/* Magic sparkle */}
-                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping"></div>
-                  </div>
-                  
-                  {/* Shimmer Effect */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-slow rounded-lg"></div>
-                  
-                  {/* Sparkle Effects */}
-                  <div className="absolute top-1 right-3 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.2s'}}></div>
-                  <div className="absolute bottom-1 left-4 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.4s'}}></div>
-                  <div className="absolute top-1/2 right-8 w-0.5 h-0.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" style={{animationDelay: '0.6s'}}></div>
-                </Button>
-              </Link>
-            </div>
+
+          <div>
+            <Link href="/todo-lists/new">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white font-medium rounded-lg shadow-md text-xs sm:text-sm transition-all">
+                <PlusIcon className="w-4 h-4" />
+                <span>Yeni Liste</span>
+              </button>
+            </Link>
           </div>
         </div>
 
@@ -251,12 +213,12 @@ export default function TodoListsPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4">
             <p className="text-red-600 font-medium">{error}</p>
-            <Button 
+            <Button
               onClick={() => {
                 setError(null)
                 loadTodoLists()
               }}
-              variant="outline" 
+              variant="outline"
               size="sm"
               className="mt-2"
             >
@@ -266,26 +228,24 @@ export default function TodoListsPage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
+        <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+          <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg mb-4">
             <button
               onClick={() => setActiveTab('my')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
-                activeTab === 'my'
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${activeTab === 'my'
                   ? 'bg-gradient-to-r from-purple-500 to-orange-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               <ListIcon className="h-4 w-4" />
               <span>Benim Listelerim ({myLists.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('partner')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${
-                activeTab === 'partner'
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-xs sm:text-sm h-8 sm:h-9 ${activeTab === 'partner'
                   ? 'bg-gradient-to-r from-purple-500 to-orange-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
               disabled={!user.partner}
             >
               <UsersIcon className="h-4 w-4" />
@@ -309,28 +269,27 @@ export default function TodoListsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentLists.map((list) => {
                 const isDeleting = deletingListId === list.id
-                
+
                 return (
                   <div
                     key={list.id}
-                    className={`group bg-white rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${
-                      isDeleting ? 'opacity-50' : ''
-                    }`}
+                    className={`group bg-white rounded-xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${isDeleting ? 'opacity-50' : ''
+                      }`}
                     style={{
                       border: `2px solid ${list.colorCode}`,
                       boxShadow: `0 0 0 1px ${list.colorCode}20, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`
                     }}
                   >
                     {/* Subtle gradient overlay */}
-                    <div 
+                    <div
                       className="absolute inset-0 opacity-5 pointer-events-none"
                       style={{
                         background: `linear-gradient(135deg, ${list.colorCode}00 0%, ${list.colorCode}20 50%, ${list.colorCode}00 100%)`
                       }}
                     />
-                    
+
                     {/* Animated border glow on hover */}
-                    <div 
+                    <div
                       className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                       style={{
                         background: `linear-gradient(45deg, ${list.colorCode}10, ${list.colorCode}05, ${list.colorCode}10)`,
@@ -340,7 +299,7 @@ export default function TodoListsPage() {
                     {/* List Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3 flex-1">
-                        <div 
+                        <div
                           className="w-4 h-4 rounded-full flex-shrink-0"
                           style={{ backgroundColor: list.colorCode }}
                         />
@@ -348,7 +307,7 @@ export default function TodoListsPage() {
                           {list.title}
                         </h3>
                       </div>
-                      
+
                       <div className="flex items-center space-x-1">
                         {/* Privacy Status Icon */}
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" title={list.isShared ? "Genel - Paylaşıldı" : "Özel - Partner'in özel listesi"}>
@@ -358,18 +317,18 @@ export default function TodoListsPage() {
                             <EyeSlashIcon className="h-4 w-4 text-gray-500" />
                           )}
                         </div>
-                        
+
                         {activeTab === 'my' && (
                           <>
                             <Link href={`/todo-lists/${list.id}/edit`}>
-                              <button 
+                              <button
                                 className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-lg transition-colors"
                                 disabled={isDeleting}
                               >
                                 <EditIcon className="h-4 w-4 text-gray-600 hover:text-purple-600" />
                               </button>
                             </Link>
-                            <button 
+                            <button
                               onClick={() => openDeleteDialog(list)}
                               className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-lg transition-colors"
                               disabled={isDeleting}
@@ -403,15 +362,15 @@ export default function TodoListsPage() {
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div 
+                        <div
                           className="h-2 rounded-full transition-all duration-300 relative"
-                          style={{ 
+                          style={{
                             width: `${list.completionPercentage || 0}%`,
                             background: `linear-gradient(90deg, ${list.colorCode}80, ${list.colorCode})`
                           }}
                         >
                           {/* Shimmer effect */}
-                          <div 
+                          <div
                             className="absolute inset-0 opacity-30"
                             style={{
                               background: `linear-gradient(90deg, transparent, ${list.colorCode}40, transparent)`,
@@ -444,7 +403,7 @@ export default function TodoListsPage() {
                           <p>Son aktivite: {new Date(list.lastActivity).toLocaleDateString()}</p>
                         )}
                       </div>
-                      
+
                       <Link href={`/todo-lists/${list.id}`}>
                         <div className="relative opacity-100 translate-y-0 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-all sm:duration-300 sm:transform sm:translate-y-2 sm:group-hover:translate-y-0">
                           <button
@@ -456,44 +415,44 @@ export default function TodoListsPage() {
                             disabled={isDeleting}
                           >
                             {/* Background shimmer effect */}
-                            <div 
+                            <div
                               className="absolute inset-0 opacity-0 group-hover/btn:opacity-30 transition-opacity duration-500 animate-shimmer rounded-lg"
                               style={{
                                 background: `linear-gradient(90deg, transparent, ${list.colorCode}40, transparent)`
                               }}
                             ></div>
-                            
+
                             {/* Content */}
                             <div className="relative z-10 flex items-center space-x-2">
                               <span className="text-sm">Detayları Görüntüle</span>
-                              <svg 
-                                className="w-4 h-4 transition-all duration-300 group-hover/btn:translate-x-1 group-hover/btn:scale-110" 
-                                fill="none" 
-                                stroke="currentColor" 
+                              <svg
+                                className="w-4 h-4 transition-all duration-300 group-hover/btn:translate-x-1 group-hover/btn:scale-110"
+                                fill="none"
+                                stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </div>
-                            
+
                             {/* Glow effect */}
-                            <div 
+                            <div
                               className="absolute inset-0 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 blur-xl"
                               style={{
                                 background: `linear-gradient(135deg, ${list.colorCode}20, ${list.colorCode}10)`
                               }}
                             ></div>
-                            
+
                             {/* Sparkle effects */}
-                            <div 
-                              className="absolute top-1 right-2 w-1 h-1 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping" 
+                            <div
+                              className="absolute top-1 right-2 w-1 h-1 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping"
                               style={{
                                 backgroundColor: list.colorCode,
                                 animationDelay: '0.1s'
                               }}
                             ></div>
-                            <div 
-                              className="absolute bottom-1 left-3 w-0.5 h-0.5 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping" 
+                            <div
+                              className="absolute bottom-1 left-3 w-0.5 h-0.5 rounded-full opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 animate-ping"
                               style={{
                                 backgroundColor: list.colorCode,
                                 animationDelay: '0.3s'
@@ -564,33 +523,33 @@ export default function TodoListsPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md">
             <div className="text-center">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-lg sm:text-2xl font-bold text-purple-600">
                 {myLists.length + partnerLists.length}
               </p>
-              <p className="text-gray-600 font-medium">Toplam Liste</p>
+              <p className="text-gray-500 text-[10px] sm:text-xs font-medium">Toplam</p>
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+
+          <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md">
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">
-                {myLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0) + 
-                 partnerLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0)}
+              <p className="text-lg sm:text-2xl font-bold text-green-600">
+                {myLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0) +
+                  partnerLists.reduce((acc, list) => acc + (list.completedItemsCount || 0), 0)}
               </p>
-              <p className="text-gray-600 font-medium">Tamamlanan Görevler</p>
+              <p className="text-gray-500 text-[10px] sm:text-xs font-medium">Bitti</p>
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+
+          <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md">
             <div className="text-center">
-              <p className="text-3xl font-bold text-orange-600">
-                {myLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0) + 
-                 partnerLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0)}
+              <p className="text-lg sm:text-2xl font-bold text-orange-600">
+                {myLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0) +
+                  partnerLists.reduce((acc, list) => acc + ((list.itemsCount || 0) - (list.completedItemsCount || 0)), 0)}
               </p>
-              <p className="text-gray-600 font-medium">Devam Eden Görevler</p>
+              <p className="text-gray-500 text-[10px] sm:text-xs font-medium">Devam</p>
             </div>
           </div>
         </div>
@@ -599,11 +558,11 @@ export default function TodoListsPage() {
         {deleteDialog.isOpen && deleteDialog.list && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
-            <div 
+            <div
               className="absolute inset-0 bg-black/20 backdrop-blur-md transition-all duration-300"
               onClick={closeDeleteDialog}
             />
-            
+
             {/* Dialog */}
             <div className="relative bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 mx-4 max-w-md w-full transform transition-all duration-300 scale-100 hover:scale-[1.02]">
               {/* Header */}

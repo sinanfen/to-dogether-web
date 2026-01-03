@@ -11,7 +11,8 @@ import {
   ListIcon,
   TargetIcon,
   XMarkIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ChevronDownIcon
 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -57,6 +58,12 @@ export default function TodoListDetailPage() {
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Stats visibility state (default collapsed)
+  const [showStats, setShowStats] = useState(false)
+
+  // Input tab state: 'search' or 'add'
+  const [inputTab, setInputTab] = useState<'search' | 'add'>('add')
 
   // Delete confirmation state
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<TodoItem | null>(null)
@@ -456,15 +463,6 @@ export default function TodoListDetailPage() {
     }
   }
 
-  const getPriorityShadowColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'hover:shadow-red-200/40'
-      case 'medium': return 'hover:shadow-yellow-200/40'
-      case 'low': return 'hover:shadow-green-200/40'
-      default: return 'hover:shadow-gray-200/40'
-    }
-  }
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -603,7 +601,7 @@ export default function TodoListDetailPage() {
             <div className="flex items-center mb-2 sm:mb-3">
               <button
                 onClick={() => router.back()}
-                className="mr-2 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="mr-2 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 flex items-center justify-center"
                 aria-label="Geri"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white">
@@ -637,37 +635,47 @@ export default function TodoListDetailPage() {
             </div>
           </div>
 
-          {/* Right Card - Statistics and Actions */}
-          <div className="bg-white rounded-xl shadow-lg p-3 sm:p-5">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <h3 className="text-sm sm:text-base font-semibold text-gray-900">İstatistikler</h3>
+          {/* Right Card - Statistics and Actions (Collapsible) */}
+          <div className="border border-gray-200 rounded-2xl px-4 py-2">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowStats(!showStats)}
+                className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-900 hover:text-purple-600 transition-colors"
+              >
+                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${showStats ? 'rotate-180' : ''}`} />
+                <span>İstatistikler</span>
+              </button>
               <Link href={`/todo-lists/${todoList.id}/edit`}>
-                <button className="flex items-center justify-center bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white font-medium px-2 sm:px-3 py-1.5 rounded-lg shadow transition-colors text-xs gap-1">
-                  <EditIcon className="w-3 h-3" />
-                  <span className="hidden xs:inline">Düzenle</span>
+                <button
+                  className="flex items-center justify-center bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white font-medium rounded shadow transition-colors"
+                  style={{ width: '25px', height: '25px', minWidth: '25px', minHeight: '25px', padding: '0' }}
+                >
+                  <EditIcon style={{ width: '12px', height: '12px' }} />
                 </button>
               </Link>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
-                <ListIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mx-auto mb-1" />
-                <div className="text-base sm:text-lg font-bold text-blue-900">{todoList.itemsCount || 0}</div>
-                <div className="text-[10px] sm:text-xs text-blue-700 font-medium">Toplam</div>
-              </div>
+            {showStats && (
+              <div className="grid grid-cols-3 gap-2 mt-3 animate-fade-in">
+                <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
+                  <ListIcon className="w-4 h-4 text-blue-600 mx-auto mb-0.5" />
+                  <div className="text-sm sm:text-base font-bold text-blue-900">{todoList.itemsCount || 0}</div>
+                  <div className="text-[9px] sm:text-[10px] text-blue-700 font-medium">Toplam</div>
+                </div>
 
-              <div className="text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
-                <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mx-auto mb-1" />
-                <div className="text-base sm:text-lg font-bold text-green-900">{todoList.completedItemsCount || 0}</div>
-                <div className="text-[10px] sm:text-xs text-green-700 font-medium">Tamamlandı</div>
-              </div>
+                <div className="text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200/50">
+                  <CheckIcon className="w-4 h-4 text-green-600 mx-auto mb-0.5" />
+                  <div className="text-sm sm:text-base font-bold text-green-900">{todoList.completedItemsCount || 0}</div>
+                  <div className="text-[9px] sm:text-[10px] text-green-700 font-medium">Tamamlandı</div>
+                </div>
 
-              <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-orange-50 rounded-lg border border-purple-200/50">
-                <TargetIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mx-auto mb-1" />
-                <div className="text-base sm:text-lg font-bold text-purple-900">{todoList.completionPercentage || 0}%</div>
-                <div className="text-[10px] sm:text-xs text-purple-700 font-medium">İlerleme</div>
+                <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-orange-50 rounded-lg border border-purple-200/50">
+                  <TargetIcon className="w-4 h-4 text-purple-600 mx-auto mb-0.5" />
+                  <div className="text-sm sm:text-base font-bold text-purple-900">{todoList.completionPercentage || 0}%</div>
+                  <div className="text-[9px] sm:text-[10px] text-purple-700 font-medium">İlerleme</div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -783,284 +791,365 @@ export default function TodoListDetailPage() {
               )}
             </div>
 
-            {/* Search Bar */}
-            <div className="relative group">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none group-focus-within:text-purple-500 transition-colors" />
-              <input
-                type="text"
-                placeholder="Görev ara..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm text-gray-900 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 focus:outline-none transition-all placeholder:text-gray-400"
-              />
-              {searchQuery && (
+            {/* Tabbed Input: Search / Add */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              {/* Tab Headers */}
+              <div className="flex border-b border-gray-200">
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
+                  onClick={() => setInputTab('add')}
+                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${inputTab === 'add'
+                    ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-500'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
                 >
-                  <XMarkIcon className="w-4 h-4 text-gray-400" />
+                  <span className="flex items-center justify-center gap-1">
+                    <PlusIcon className="w-3 h-3" />
+                    Ekle
+                  </span>
                 </button>
-              )}
-            </div>
-          </div>
+                <button
+                  onClick={() => setInputTab('search')}
+                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${inputTab === 'search'
+                    ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-500'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                  <span className="flex items-center justify-center gap-1">
+                    <MagnifyingGlassIcon className="w-3 h-3" />
+                    Ara
+                  </span>
+                </button>
+              </div>
 
-          {/* Quick Add Input - Always Visible */}
-          {canEditItems() && !isReadOnlyPartnerList() && (
-            <div className="bg-white rounded-lg shadow-md p-3 w-full">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-gray-300 rounded-full flex-shrink-0"></div>
-                <input
-                  ref={quickAddInputRef}
-                  type="text"
-                  placeholder="Yeni görev ekle ve Enter'a bas..."
-                  className="flex-1 bg-transparent border border-gray-200 rounded-md px-3 py-2 outline-none text-gray-900 placeholder-gray-400 text-sm focus:border-purple-400 focus:ring-1 focus:ring-purple-200 transition-colors"
-                  onKeyDown={async (e) => {
-                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                      e.preventDefault()
-                      const title = e.currentTarget.value.trim()
+              {/* Tab Content */}
+              <div className="p-2">
+                {inputTab === 'search' ? (
+                  /* Search Input */
+                  <div className="relative">
+                    <MagnifyingGlassIcon style={{ width: '10px', height: '10px', position: 'absolute', left: '6px', top: '50%', transform: 'translateY(-50%)' }} className="text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Ara..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded text-gray-900 focus:bg-white focus:border-purple-300 focus:outline-none transition-all placeholder:text-gray-400"
+                      style={{ paddingLeft: '24px', paddingRight: '24px', fontSize: '12px', height: '25px' }}
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-200 rounded"
+                      >
+                        <XMarkIcon className="w-2.5 h-2.5 text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Add Input */
+                  canEditItems() && !isReadOnlyPartnerList() ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={quickAddInputRef}
+                        type="text"
+                        placeholder="Yeni görev..."
+                        className="flex-1 bg-gray-50 border border-gray-200 rounded outline-none text-gray-900 placeholder-gray-400 focus:bg-white focus:border-purple-400 transition-all"
+                        style={{ paddingLeft: '10px', paddingRight: '10px', fontSize: '12px', height: '25px' }}
+                        onKeyDown={async (e) => {
+                          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                            e.preventDefault()
+                            const title = e.currentTarget.value.trim()
 
-                      try {
-                        setAddingItem(true)
-                        setError(null)
+                            try {
+                              setAddingItem(true)
+                              setError(null)
 
-                        const itemData: CreateTodoItemRequest = {
-                          title,
-                          severity: priorityToSeverity('medium')
-                        }
+                              const itemData: CreateTodoItemRequest = {
+                                title,
+                                severity: priorityToSeverity('medium')
+                              }
 
-                        const newItem = await api.createTodoItem(listId, itemData)
+                              const newItem = await api.createTodoItem(listId, itemData)
 
-                        if (todoList) {
-                          setTodoList({
-                            ...todoList,
-                            items: [{
-                              ...newItem,
-                              isCompleted: false,
-                              priority: 'medium'
-                            }, ...(todoList.items || [])]
-                          })
-                        }
+                              if (todoList) {
+                                setTodoList({
+                                  ...todoList,
+                                  items: [{
+                                    ...newItem,
+                                    isCompleted: false,
+                                    priority: 'medium'
+                                  }, ...(todoList.items || [])]
+                                })
+                              }
 
-                        if (quickAddInputRef.current) {
-                          quickAddInputRef.current.value = ''
-                          quickAddInputRef.current.focus()
-                        }
-                      } catch (err) {
-                        console.error('Quick add item error:', err)
-                        const errorMessage = err instanceof Error ? err.message : 'Görev eklenemedi'
-                        setError(errorMessage)
-                      } finally {
-                        setAddingItem(false)
-                      }
-                    }
-                  }}
-                  disabled={addingItem}
-                  inputMode="text"
-                  autoComplete="off"
-                />
-                {addingItem && (
-                  <div className="w-4 h-4 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin flex-shrink-0"></div>
+                              if (quickAddInputRef.current) {
+                                quickAddInputRef.current.value = ''
+                                quickAddInputRef.current.focus()
+                              }
+                            } catch (err) {
+                              console.error('Quick add item error:', err)
+                              const errorMessage = err instanceof Error ? err.message : 'Görev eklenemedi'
+                              setError(errorMessage)
+                            } finally {
+                              setAddingItem(false)
+                            }
+                          }
+                        }}
+                        disabled={addingItem}
+                        inputMode="text"
+                        autoComplete="off"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!quickAddInputRef.current?.value.trim()) return
+                          const title = quickAddInputRef.current.value.trim()
+
+                          try {
+                            setAddingItem(true)
+                            setError(null)
+
+                            const itemData: CreateTodoItemRequest = {
+                              title,
+                              severity: priorityToSeverity('medium')
+                            }
+
+                            const newItem = await api.createTodoItem(listId, itemData)
+
+                            if (todoList) {
+                              setTodoList({
+                                ...todoList,
+                                items: [{
+                                  ...newItem,
+                                  isCompleted: false,
+                                  priority: 'medium'
+                                }, ...(todoList.items || [])]
+                              })
+                            }
+
+                            if (quickAddInputRef.current) {
+                              quickAddInputRef.current.value = ''
+                              quickAddInputRef.current.focus()
+                            }
+                          } catch (err) {
+                            console.error('Quick add item error:', err)
+                            const errorMessage = err instanceof Error ? err.message : 'Görev eklenemedi'
+                            setError(errorMessage)
+                          } finally {
+                            setAddingItem(false)
+                          }
+                        }}
+                        disabled={addingItem}
+                        className="flex-shrink-0 bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white rounded transition-all disabled:opacity-50 flex items-center justify-center"
+                        style={{ width: '25px', height: '25px', minWidth: '25px', minHeight: '25px', padding: '0' }}
+                        title="Ekle"
+                      >
+                        {addingItem ? (
+                          <div style={{ width: '12px', height: '12px' }} className="border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <PlusIcon style={{ width: '14px', height: '14px' }} />
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center py-2">Salt okunur</p>
+                  )
                 )}
               </div>
             </div>
-          )}
+          </div>
 
-          {filteredItems.length > 0 ? (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden w-full">
-              <div className="p-3 sm:p-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-900">Görev Listesi</h3>
-              </div>
-              <div className="max-h-[55vh] overflow-y-auto">
-                <div className="p-2 sm:p-3 space-y-2">
-                  {filteredItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`group relative ${draggedItem?.id === item.id ? 'opacity-50 scale-95' : ''} ${dragOverItem?.id === item.id ? 'ring-2 ring-purple-400 ring-offset-2' : ''} transition-all duration-200`}
-                      data-item-id={item.id}
-                      draggable={!item.isCompleted && canEditItems()}
-                      onDragStart={() => handleDragStart(item)}
-                      onDragOver={(e) => handleDragOver(e, item)}
-                      onDragEnd={handleDragEnd}
-                      onTouchStart={(e) => handleTouchStart(e, item)}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    >
-                      {/* Background gradient based on priority */}
-                      <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-lg opacity-30`}></div>
+          {
+            filteredItems.length > 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden w-full">
+                <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+                  <div className="p-2 sm:p-3 space-y-2">
+                    {filteredItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`group relative ${draggedItem?.id === item.id ? 'opacity-50 scale-95' : ''} ${dragOverItem?.id === item.id ? 'ring-2 ring-purple-400 ring-offset-2' : ''} transition-all duration-200`}
+                        data-item-id={item.id}
+                        draggable={!item.isCompleted && canEditItems()}
+                        onDragStart={() => handleDragStart(item)}
+                        onDragOver={(e) => handleDragOver(e, item)}
+                        onDragEnd={handleDragEnd}
+                        onTouchStart={(e) => handleTouchStart(e, item)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                      >
+                        {/* Background gradient based on priority */}
+                        <div className={`absolute inset-0 bg-gradient-to-r ${getPriorityBg(item.priority || 'medium')} rounded-lg opacity-30`}></div>
 
-                      {/* Content */}
-                      <div className={`relative bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-300 ${getPriorityShadowColor(item.priority || 'medium')} ${item.isCompleted ? 'opacity-70' : ''}`}>
-                        {/* Drag handle for non-completed items */}
-                        {!item.isCompleted && canEditItems() && (
-                          <div className="absolute left-1 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity p-1">
-                            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <circle cx="8" cy="6" r="2" />
-                              <circle cx="16" cy="6" r="2" />
-                              <circle cx="8" cy="12" r="2" />
-                              <circle cx="16" cy="12" r="2" />
-                              <circle cx="8" cy="18" r="2" />
-                              <circle cx="16" cy="18" r="2" />
-                            </svg>
-                          </div>
-                        )}
-                        {editingItemId === item.id ? (
-                          /* Edit Form */
-                          <div className="space-y-3">
-                            <Input
-                              value={editItemForm.title}
-                              onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
-                              placeholder="Görev başlığı..."
-                              className="w-full text-sm"
-                              onKeyDown={(e) => e.key === 'Enter' && handleEditItem(item.id)}
-                              autoFocus
-                            />
+                        {/* Content */}
+                        <div className={`relative bg-white/95 border border-gray-100 rounded-md p-2 transition-all duration-200 ${item.isCompleted ? 'opacity-60' : ''}`}>
+                          {/* Drag handle for non-completed items */}
+                          {!item.isCompleted && canEditItems() && (
+                            <div className="absolute left-1 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                <circle cx="8" cy="6" r="2" />
+                                <circle cx="16" cy="6" r="2" />
+                                <circle cx="8" cy="12" r="2" />
+                                <circle cx="16" cy="12" r="2" />
+                                <circle cx="8" cy="18" r="2" />
+                                <circle cx="16" cy="18" r="2" />
+                              </svg>
+                            </div>
+                          )}
+                          {editingItemId === item.id ? (
+                            /* Edit Form */
+                            <div className="space-y-3">
+                              <Input
+                                value={editItemForm.title}
+                                onChange={(e) => setEditItemForm({ ...editItemForm, title: e.target.value })}
+                                placeholder="Görev başlığı..."
+                                className="w-full text-sm"
+                                onKeyDown={(e) => e.key === 'Enter' && handleEditItem(item.id)}
+                                autoFocus
+                              />
 
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                              <div className="flex flex-wrap gap-1.5">
-                                {(['low', 'medium', 'high'] as const).map((priority) => (
+                              <div className="flex flex-col gap-2">
+                                <div className="flex gap-1">
+                                  {(['low', 'medium', 'high'] as const).map((priority) => (
+                                    <button
+                                      key={priority}
+                                      onClick={() => setEditItemForm({ ...editItemForm, priority })}
+                                      className={`flex items-center justify-center rounded transition-all ${editItemForm.priority === priority
+                                        ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white shadow-sm`
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                      style={{ width: '28px', height: '28px' }}
+                                    >
+                                      <span style={{ fontSize: '12px' }}>{priority === 'low' ? '✓' : priority === 'medium' ? '≡' : '⚡'}</span>
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <div className="flex gap-2">
                                   <button
-                                    key={priority}
-                                    onClick={() => setEditItemForm({ ...editItemForm, priority })}
-                                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all duration-200 ${editItemForm.priority === priority
-                                      ? `bg-gradient-to-r ${getPriorityColor(priority)} text-white shadow-sm font-semibold`
-                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                      } active:scale-95`}
+                                    onClick={cancelEdit}
+                                    className="flex-1 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-xs font-medium flex items-center justify-center"
+                                    style={{ height: '28px' }}
                                   >
-                                    {getPriorityIcon(priority)}
-                                    <span className="capitalize hidden xs:inline">{priority === 'low' ? 'Düşük' : priority === 'medium' ? 'Orta' : 'Yüksek'}</span>
+                                    İptal
                                   </button>
-                                ))}
-                              </div>
-
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={cancelEdit}
-                                  className="flex-1 sm:flex-none px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-xs font-medium"
-                                >
-                                  İptal
-                                </button>
-                                <button
-                                  onClick={() => handleEditItem(item.id)}
-                                  disabled={!editItemForm.title.trim() || savingItemId === item.id}
-                                  className="flex-1 sm:flex-none px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-md text-xs font-medium disabled:opacity-50 flex items-center justify-center gap-1"
-                                >
-                                  {savingItemId === item.id ? (
-                                    <>
-                                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                      <span>Kaydediliyor...</span>
-                                    </>
-                                  ) : (
-                                    <span>Kaydet</span>
-                                  )}
-                                </button>
+                                  <button
+                                    onClick={() => handleEditItem(item.id)}
+                                    disabled={!editItemForm.title.trim() || savingItemId === item.id}
+                                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded text-xs font-medium disabled:opacity-50 flex items-center justify-center gap-1"
+                                    style={{ height: '28px' }}
+                                  >
+                                    {savingItemId === item.id ? (
+                                      <>
+                                        <div style={{ width: '10px', height: '10px' }} className="border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>Kaydediliyor...</span>
+                                      </>
+                                    ) : (
+                                      <span>Kaydet</span>
+                                    )}
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ) : (
-                          /* Display Mode */
-                          <div className="flex items-start gap-2.5">
-                            {/* Checkbox */}
-                            <button
-                              onClick={() => handleToggleComplete(item.id)}
-                              disabled={toggleingItemId === item.id || !canEditItems()}
-                              className={`relative flex-shrink-0 w-5 h-5 rounded-md border-2 transition-all duration-300 mt-0.5 ${item.isCompleted
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-transparent shadow-md'
-                                : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
-                                } ${!canEditItems() ? 'opacity-50 cursor-not-allowed' : ''} active:scale-95`}
-                            >
-                              {toggleingItemId === item.id ? (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                </div>
-                              ) : item.isCompleted ? (
-                                <CheckIcon className="w-3 h-3 text-white absolute inset-0 m-auto" />
-                              ) : null}
-                            </button>
+                          ) : (
+                            /* Display Mode - Aligned layout */
+                            <div className="flex flex-col gap-1">
+                              {/* Row 1: checkbox + title + actions */}
+                              <div className="flex items-center gap-2">
+                                {/* Checkbox - 25x25px */}
+                                <button
+                                  onClick={() => handleToggleComplete(item.id)}
+                                  disabled={toggleingItemId === item.id || !canEditItems()}
+                                  className={`flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${item.isCompleted
+                                    ? 'bg-green-500 border-green-500'
+                                    : 'border-gray-300 hover:border-purple-500 bg-white'
+                                    } ${!canEditItems() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  style={{ width: '25px', height: '25px', minWidth: '25px', minHeight: '25px' }}
+                                >
+                                  {toggleingItemId === item.id ? (
+                                    <div style={{ width: '12px', height: '12px' }} className="border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                  ) : item.isCompleted ? (
+                                    <CheckIcon style={{ width: '14px', height: '14px' }} className="text-white" />
+                                  ) : null}
+                                </button>
 
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <h3 className={`text-sm font-medium transition-all duration-300 break-words ${item.isCompleted
-                                    ? 'text-gray-500 line-through'
-                                    : 'text-gray-900'
-                                    }`}>
-                                    {item.title}
-                                  </h3>
+                                {/* Title - flex-1 */}
+                                <p className={`flex-1 text-sm leading-snug break-words ${item.isCompleted
+                                  ? 'text-gray-400 line-through'
+                                  : 'text-gray-800'
+                                  }`}>
+                                  {item.title}
+                                </p>
 
-                                  {/* Priority Badge & Date */}
-                                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                    <div className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r ${getPriorityColor(item.priority || 'medium')} text-white shadow-sm`}>
-                                      {getPriorityIcon(item.priority || 'medium')}
-                                      <span className="capitalize">{item.priority === 'low' ? 'Düşük' : item.priority === 'medium' ? 'Orta' : item.priority === 'high' ? 'Yüksek' : 'Orta'}</span>
-                                    </div>
-                                    <span className="text-[10px] text-gray-400">
-                                      {new Date(item.createdAt).toLocaleDateString('tr-TR')}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Actions */}
+                                {/* Actions - aligned right */}
                                 {canEditItems() && (
                                   <div className="flex items-center gap-1 flex-shrink-0">
                                     <button
                                       onClick={() => startEdit(item)}
-                                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all active:scale-95"
+                                      className="flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                                      style={{ width: '25px', height: '25px' }}
                                       title="Düzenle"
                                     >
-                                      <EditIcon className="w-3.5 h-3.5" />
+                                      <EditIcon style={{ width: '12px', height: '12px' }} />
                                     </button>
-
                                     <button
                                       onClick={() => setDeleteConfirmItem(item)}
-                                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-all active:scale-95"
+                                      className="flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                      style={{ width: '25px', height: '25px' }}
                                       title="Sil"
                                     >
-                                      <TrashIcon className="w-3.5 h-3.5" />
+                                      <TrashIcon style={{ width: '12px', height: '12px' }} />
                                     </button>
                                   </div>
                                 )}
                               </div>
+
+                              {/* Row 2: badges - aligned under title */}
+                              <div className="flex items-center gap-2" style={{ marginLeft: '33px' }}>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium bg-gradient-to-r ${getPriorityColor(item.priority || 'medium')} text-white`}>
+                                  {item.priority === 'low' ? 'Düşük' : item.priority === 'high' ? 'Yüksek' : 'Orta'}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                  {new Date(item.createdAt).toLocaleDateString('tr-TR')}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* Empty State */
-            <div className="text-center py-10 px-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-orange-100 rounded-2xl opacity-50"></div>
-                <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-2xl p-8">
-                  <ListIcon className="w-14 h-14 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {searchQuery ? 'Görev Bulunamadı' : 'Henüz Görev Yok'}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-6 max-w-xs mx-auto">
-                    {searchQuery
-                      ? `"${searchQuery}" araması için sonuç bulunamadı.`
-                      : 'Bu listeye ilk görevinizi ekleyin.'
-                    }
-                  </p>
-                  {!searchQuery && canEditItems() && (
-                    <Button
-                      onClick={() => setShowAddForm(true)}
-                      className="bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 shadow-lg"
-                    >
-                      <PlusIcon className="w-4 h-4 mr-1.5" />
-                      İlk Görevinizi Ekleyin
-                    </Button>
-                  )}
+            ) : (
+              /* Empty State */
+              <div className="text-center py-10 px-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-orange-100 rounded-2xl opacity-50"></div>
+                  <div className="relative bg-white/80 backdrop-blur-sm border border-purple-200/50 rounded-2xl p-8">
+                    <ListIcon className="w-14 h-14 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {searchQuery ? 'Görev Bulunamadı' : 'Henüz Görev Yok'}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-6 max-w-xs mx-auto">
+                      {searchQuery
+                        ? `"${searchQuery}" araması için sonuç bulunamadı.`
+                        : 'Bu listeye ilk görevinizi ekleyin.'
+                      }
+                    </p>
+                    {!searchQuery && canEditItems() && (
+                      <Button
+                        onClick={() => setShowAddForm(true)}
+                        className="bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 shadow-lg"
+                      >
+                        <PlusIcon className="w-4 h-4 mr-1.5" />
+                        İlk Görevinizi Ekleyin
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </AppLayout>
+            )
+          }
+        </div >
+      </div >
+    </AppLayout >
   )
 } 
